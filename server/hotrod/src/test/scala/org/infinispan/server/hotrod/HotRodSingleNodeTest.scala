@@ -4,11 +4,11 @@ import org.infinispan.test.SingleCacheManagerTest
 import test.HotRodClient
 import org.infinispan.AdvancedCache
 import test.HotRodTestingUtil._
-import org.jboss.netty.channel.ChannelFuture
 import org.infinispan.test.fwk.TestCacheManagerFactory
 import org.infinispan.manager.EmbeddedCacheManager
 import org.infinispan.server.core.test.ServerTestingUtil._
 import org.testng.annotations.{Test, AfterClass}
+import io.netty.channel.ChannelFuture
 
 /**
  * Base test class for single node Hot Rod tests.
@@ -29,7 +29,7 @@ abstract class HotRodSingleNodeTest extends SingleCacheManagerTest {
       cacheManager
    }
 
-   @Test(enabled = false)
+   @Test(enabled = false) // Disable explicitly to avoid TestNG thinking this is a test!!
    protected override def setup() {
       super.setup()
       hotRodServer = createStartHotRodServer(cacheManager)

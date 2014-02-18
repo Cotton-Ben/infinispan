@@ -53,9 +53,11 @@
 
    <properties>
       <!-- Versions for dependencies -->
-      <version.protostream>1.0.0.CR1</version.protostream>
+      <version.protostream>1.0.0.Final</version.protostream>
+      <version.protobuf>2.5.0</version.protobuf>
       <version.aesh>0.33.7</version.aesh>
       <version.antlr>3.4</version.antlr>
+      <version.commons.pool>1.6</version.commons.pool>
       <version.gnu.getopt>1.0.13</version.gnu.getopt>
       <version.hibernate.search>4.5.0.Final</version.hibernate.search>
       <version.jboss.marshalling>1.4.2.Final</version.jboss.marshalling>
@@ -63,7 +65,7 @@
       <version.jgroups>3.4.1.Final</version.jgroups>
       <version.json>20090211</version.json>
       <version.jta>1.0.1.Final</version.jta>
-      <version.netty>3.6.6.Final</version.netty>
+      <version.netty>4.0.15.Final</version.netty>
       <version.osgi>4.3.0</version.osgi>
       <version.rhq>4.4.0</version.rhq>
       <version.scala>2.10.2</version.scala>
@@ -315,7 +317,7 @@
          <!-- Infinispan Protocols module dependencies -->
          <dependency>
             <groupId>io.netty</groupId>
-            <artifactId>netty</artifactId>
+            <artifactId>netty-all</artifactId>
             <version>${version.netty}</version>
          </dependency>
          <dependency>
@@ -327,6 +329,11 @@
             <groupId>com.thoughtworks.xstream</groupId>
             <artifactId>xstream</artifactId>
             <version>${version.xstream}</version>
+         </dependency>
+         <dependency>
+            <groupId>commons-pool</groupId>
+            <artifactId>commons-pool</artifactId>
+            <version>${version.commons.pool}</version>
          </dependency>
       </dependencies>
    </dependencyManagement>

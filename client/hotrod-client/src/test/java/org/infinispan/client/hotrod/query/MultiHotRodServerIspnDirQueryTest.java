@@ -16,7 +16,7 @@ import static org.infinispan.server.hotrod.test.HotRodTestingUtil.hotRodCacheCon
  *
  * @author Anna Manukyan
  */
-@Test(testName = "client.hotrod.query.MultiHotRodServerIspnDirQueryTest", groups = "functional", enabled = false, description = "Enable tests when ISPN-3672 is fixed.")
+@Test(testName = "client.hotrod.query.MultiHotRodServerIspnDirQueryTest", groups = "unstable", description = "Enable tests when ISPN-3672 is fixed. -- original group: functional")
 public class MultiHotRodServerIspnDirQueryTest extends MultiHotRodServerQueryTest {
 
    @Override
@@ -33,7 +33,7 @@ public class MultiHotRodServerIspnDirQueryTest extends MultiHotRodServerQueryTes
       for (EmbeddedCacheManager cm : cacheManagers) {
          cm.defineConfiguration("queryableCache", builder.build());
 
-         cm.getGlobalComponentRegistry().getComponent(ProtobufMetadataManager.class).registerProtofile("/bank.protobin");
+         cm.getGlobalComponentRegistry().getComponent(ProtobufMetadataManager.class).registerProtofile("/sample_bank_account/bank.protobin");
       }
 
       //initialize client-side serialization context
@@ -45,16 +45,19 @@ public class MultiHotRodServerIspnDirQueryTest extends MultiHotRodServerQueryTes
       remoteCache1 = client(1).getCache("queryableCache");
    }
 
-   @Test(enabled = false)
+   @Test(groups = "unstable")
    public void testAttributeQuery() throws Exception {
+      super.testAttributeQuery();
 
    }
 
-   @Test(enabled = false)
+   @Test(groups = "unstable")
    public void testEmbeddedAttributeQuery() throws Exception {
+      super.testEmbeddedAttributeQuery();
    }
 
-   @Test(enabled = false)
+   @Test(groups = "unstable")
    public void testProjections() throws Exception {
+      super.testProjections();
    }
 }

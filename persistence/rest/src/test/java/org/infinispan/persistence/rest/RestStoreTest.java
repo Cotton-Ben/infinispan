@@ -12,6 +12,7 @@ import org.infinispan.marshall.core.MarshalledEntryFactoryImpl;
 import org.infinispan.persistence.BaseStoreTest;
 import org.infinispan.persistence.DummyInitializationContext;
 import org.infinispan.persistence.spi.AdvancedLoadWriteStore;
+import org.infinispan.persistence.spi.PersistenceException;
 import org.infinispan.rest.EmbeddedRestServer;
 import org.infinispan.rest.RestTestingUtil;
 import org.infinispan.test.TestingUtil;
@@ -24,7 +25,7 @@ import org.testng.annotations.Test;
  * @author Tristan Tarrant
  * @since 6.0
  */
-@Test(testName = "persistence.remote.RemoteCacheStoreTest", groups = "functional")
+@Test(testName = "persistence.rest.RestStoreTest", groups = "unstable", description = "original group: functional")
 public class RestStoreTest extends BaseStoreTest {
 
    private static final String REMOTE_CACHE = "remote-cache";
@@ -59,10 +60,14 @@ public class RestStoreTest extends BaseStoreTest {
    }
 
    @Override
-   @AfterMethod
+   @AfterMethod(alwaysRun = true)
    public void tearDown() {
-      RestTestingUtil.killServers(restServer);
-      TestingUtil.killCacheManagers(localCacheManager);
+      if (restServer != null) {
+         RestTestingUtil.killServers(restServer);
+      }
+      if (localCacheManager != null) {
+         TestingUtil.killCacheManagers(localCacheManager);
+      }
    }
 
    @Override
@@ -85,7 +90,12 @@ public class RestStoreTest extends BaseStoreTest {
       localCacheManager.getCache().getAdvancedCache().getEvictionManager().processEviction();
    }
 
+    /*
+    * Unfortunately we need to mark each test individual as unstable because the super class belong to a valid test
+    * group. I think that it appends the unstable group to the super class group making it running the tests anyway.
+    */
 
+   @Test(groups = "unstable")
    @Override
    public void testReplaceExpiredEntry() throws Exception {
       InternalCacheEntry ice = TestInternalCacheEntryFactory.create("k1", "v1", 100);
@@ -97,5 +107,65 @@ public class RestStoreTest extends BaseStoreTest {
       InternalCacheEntry ice2 = TestInternalCacheEntryFactory.create("k1", "v2", 100);
       cl.write(TestingUtil.marshalledEntry(ice2, getMarshaller()));
       assert cl.load("k1").getValue().equals("v2");
+   }
+
+   @Test(groups = "unstable")
+   @Override
+   public void testLoadAndStoreImmortal() throws PersistenceException {
+      super.testLoadAndStoreImmortal();
+   }
+
+   @Test(groups = "unstable")
+   @Override
+   public void testLoadAndStoreWithLifespan() throws Exception {
+      super.testLoadAndStoreWithLifespan();
+   }
+
+   @Test(groups = "unstable")
+   @Override
+   public void testLoadAndStoreWithIdle() throws Exception {
+      super.testLoadAndStoreWithIdle();
+   }
+
+   @Test(groups = "unstable")
+   @Override
+   public void testLoadAndStoreWithLifespanAndIdle() throws Exception {
+      super.testLoadAndStoreWithLifespanAndIdle();
+   }
+
+   @Test(groups = "unstable")
+   @Override
+   public void testStopStartDoesNotNukeValues() throws InterruptedException, PersistenceException {
+      super.testStopStartDoesNotNukeValues();
+   }
+
+   @Test(groups = "unstable")
+   @Override
+   public void testPreload() throws Exception {
+      super.testPreload();
+   }
+
+   @Test(groups = "unstable")
+   @Override
+   public void testStoreAndRemove() throws PersistenceException {
+      super.testStoreAndRemove();
+   }
+
+   @Test(groups = "unstable")
+   @Override
+   public void testPurgeExpired() throws Exception {
+      super.testPurgeExpired();
+   }
+
+   @Test(groups = "unstable")
+   @Override
+   public void testLoadAll() throws PersistenceException {
+      super.testLoadAll();
+   }
+
+   @Test(groups = "unstable")
+   @Override
+   public void testLoadAndStoreMarshalledValues() throws PersistenceException {
+      super.testLoadAndStoreMarshalledValues();
    }
 }
