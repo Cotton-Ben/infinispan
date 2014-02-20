@@ -21,6 +21,7 @@ import org.infinispan.protostream.sampledomain.marshallers.MarshallerRegistratio
 import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryFactory;
 import org.infinispan.server.test.util.RemoteCacheManagerFactory;
+import static org.infinispan.server.test.util.TestUtil.invokeOperation;
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.After;
 import org.junit.Before;
@@ -40,7 +41,7 @@ import static org.junit.Assert.assertNotNull;
 @WithRunningServer("remote-query")
 public class RemoteQueryTest {
 
-   protected static final String DEFAULT_CACHE = "testcache";
+    protected static final String DEFAULT_CACHE = "testcache";
 
     @InfinispanResource("remote-query")
     protected RemoteInfinispanServer server;
@@ -68,7 +69,7 @@ public class RemoteQueryTest {
                 + ",component=ProtobufMetadataManager";
 
         //initialize server-side serialization context via JMX
-        byte[] descriptor = readClasspathResource("/bank.protobin");
+        byte[] descriptor = readClasspathResource("/sample_bank_account/bank.protobin");
         invokeOperation(provider, mbean, "registerProtofile", new Object[]{descriptor}, new String[]{byte[].class.getName()});
 
         //initialize client-side serialization context
@@ -194,13 +195,10 @@ public class RemoteQueryTest {
        try {
           return Util.readStream(is);
        } finally {
-          is.close();
+          if (is != null) {
+             is.close();
+          }
        }
-    }
-
-    private Object invokeOperation(MBeanServerConnectionProvider provider, String mbean, String operationName, Object[] params,
-                                   String[] signature) throws Exception {
-        return provider.getConnection().invoke(new ObjectName(mbean), operationName, params, signature);
     }
 
 }

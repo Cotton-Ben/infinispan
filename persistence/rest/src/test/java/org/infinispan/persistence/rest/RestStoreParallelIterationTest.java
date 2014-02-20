@@ -16,7 +16,7 @@ import org.testng.annotations.Test;
  * @author Mircea Markus
  * @since 6.0
  */
-@Test (groups = "functional", testName = "persistence.rest.RestStoreParallelIterationTest")
+@Test (groups = "unstable", testName = "persistence.rest.RestStoreParallelIterationTest", description = "original group: functional")
 public class RestStoreParallelIterationTest  extends ParallelIterationTest {
 
    private EmbeddedCacheManager localCacheManager;
@@ -42,5 +42,28 @@ public class RestStoreParallelIterationTest  extends ParallelIterationTest {
    @Override
    protected int numThreads() {
       return KnownComponentNames.getDefaultThreads(KnownComponentNames.PERSISTENCE_EXECUTOR) + 1 /** caller's thread */;
+   }
+
+   /*
+    * Unfortunately we need to mark each test individual as unstable because the super class belong to a valid test
+    * group. I think that it appends the unstable group to the super class group making it running the tests anyway.
+    */
+
+   @Test(groups = "unstable", description = "don't know why but it is still running this test even the class is marked as unstable")
+   @Override
+   public void testParallelIteration() {
+      super.testParallelIteration();
+   }
+
+   @Test(groups = "unstable", description = "don't know why but it is still running this test even the class is marked as unstable")
+   @Override
+   public void testSequentialIteration() {
+      super.testSequentialIteration();
+   }
+
+   @Test(groups = "unstable")
+   @Override
+   public void testCancelingTaskMultipleProcessors() {
+      super.testCancelingTaskMultipleProcessors();
    }
 }
