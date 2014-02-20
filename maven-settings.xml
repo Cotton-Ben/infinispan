@@ -6,7 +6,38 @@
     <pluginGroups>
         <pluginGroup>org.jboss.maven.plugins</pluginGroup>
     </pluginGroups>
+<mirrors>
+    <mirror>
+      <!--This sends everything else to /jpmc-public -->
+      <id>jpmc-public</id>
+      <mirrorOf>*</mirrorOf>
+      <url>http://repo-proxy.jpmchase.net/maven/content/groups/jpmc-public</url>
+    </mirror>
+  </mirrors>
+
     <profiles>
+    <profile>
+       <id>frs</id>
+       <!-- Enable jpmc snapshots for the built in jpmc-public repository to direct -->
+       <!-- all requests to frs via the mirror -->
+       <repositories>
+         <repository>
+           <id>jpmc-public</id>
+           <url>http://repo-proxy.jpmchase.net/maven/content/groups/jpmc-public/</url>
+           <releases><enabled>true</enabled></releases>
+           <snapshots><enabled>true</enabled></snapshots>
+         </repository>
+       </repositories>
+      <pluginRepositories>
+         <pluginRepository>
+           <id>jpmc-public</id>
+           <url>http://repo-proxy.jpmchase.net/maven/content/groups/jpmc-public/</url>
+           <releases><enabled>true</enabled></releases>
+           <snapshots><enabled>true</enabled></snapshots>
+         </pluginRepository>
+       </pluginRepositories>
+     </profile>
+
         <profile>
             <id>jboss-public-repository</id>
             <repositories>
