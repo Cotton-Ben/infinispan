@@ -7,6 +7,7 @@ import org.infinispan.container.DataContainer;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.persistence.spi.AdvancedCacheLoader;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,9 +18,11 @@ import java.util.Set;
 /**
  * Created by
  *
- *@author ben.cotton@jpmorgan.com
  *@author dmitry.gordeev@jpmorgan.com
- *
+ *@author ben.cotton@jpmorgan.com
+ *<p> </p>
+ *@author Extended from OpenHFT HC solution (peter.lawrey@higherfrequencytrading.com)
+ *<p></p>
  *@since 7.0
  *
  * on 3/8/2014
@@ -34,7 +37,8 @@ public class JCacheOffHeapImpl extends VanillaSharedHashMap implements DataConta
 
     @Override
     public InternalCacheEntry get(Object k) {
-        return null;
+
+        return (InternalCacheEntry) super.get(k);  //Dmitry: we have to morph to return RedHat 'ICE'
     }
 
     @Override
@@ -49,37 +53,39 @@ public class JCacheOffHeapImpl extends VanillaSharedHashMap implements DataConta
 
     @Override
     public boolean containsKey(Object k) {
-        return false;
+
+        return super.containsKey(k);
     }
 
     @Override
     public InternalCacheEntry remove(Object k) {
-        return null;
+        return (InternalCacheEntry) super.remove(k);  //Dmitry: we have morph to return RedHat 'ICE'
     }
 
     @Override
     public int size() {
-        return 0;
+        return super.size();
     }
 
     @Override
     public void clear() {
-
+        super.clear();
     }
+
 
     @Override
     public Set<Object> keySet() {
-        return null;
+        return super.keySet();
     }
 
     @Override
     public Collection<Object> values() {
-        return null;
+        return super.values();
     }
 
     @Override
     public Set<InternalCacheEntry> entrySet() {
-        return null;
+        return super.entrySet();
     }
 
     @Override

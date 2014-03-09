@@ -87,6 +87,7 @@ public interface DataContainer extends Iterable<InternalCacheEntry> {
     * 
     * @return a set of keys
     */
+   //@org.jetbrains.annotations.NotNull
    Set<Object> keySet();
 
    /**
