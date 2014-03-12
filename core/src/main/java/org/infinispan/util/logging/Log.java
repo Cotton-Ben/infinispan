@@ -20,10 +20,10 @@ import org.infinispan.transaction.xa.recovery.RecoveryAwareRemoteTransaction;
 import org.infinispan.transaction.xa.recovery.RecoveryAwareTransaction;
 import org.infinispan.util.concurrent.TimeoutException;
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Cause;
-import org.jboss.logging.LogMessage;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 import org.jgroups.View;
 
 import javax.management.InstanceAlreadyExistsException;
@@ -163,7 +163,7 @@ public interface Log extends BasicLogger {
    @Message(value = "Passivated %d entries in %s", id = 30)
    void passivatedEntries(int numEntries, String duration);
 
-   @LogMessage(level = INFO)
+   @LogMessage(level = TRACE)
    @Message(value = "MBeans were successfully registered to the platform MBean server.", id = 31)
    void mbeansSuccessfullyRegistered();
 
@@ -1065,4 +1065,16 @@ public interface Log extends BasicLogger {
 
    @Message(value = "A principal-to-role mapper has not been specified", id = 288)
    CacheConfigurationException invalidPrincipalRoleMapper();
+
+   @LogMessage(level = WARN)
+   @Message(value = "Unable to send X-Site state chunk to '%s'.", id = 289)
+   void unableToSendXSiteState(String site, @Cause Throwable cause);
+
+   @LogMessage(level = WARN)
+   @Message(value = "Unable to wait for X-Site state chunk ACKs from '%s'.", id = 290)
+   void unableToWaitForXSiteStateAcks(String site, @Cause Throwable cause);
+
+   @LogMessage(level = WARN)
+   @Message(value = "Unable to apply X-Site state chunk.", id = 291)
+   void unableToApplyXSiteState(@Cause Throwable cause);
 }
