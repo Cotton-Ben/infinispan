@@ -72,11 +72,11 @@ public class OffHeapDefaultDataContainer implements org.infinispan.container.Dat
         try {
             entries = new SharedHashMapBuilder()
                     .generatedValueType(Boolean.TRUE)
+                    .entrySize(512)
                     .create(
                             new File("/dev/shm/offHeapSharedHashMap.DataContainer"),
                             Object.class,
                             InternalCacheEntry.class
-                            /* BondVOInterface.class */
                     );
         } catch (IOException e) {
             e.printStackTrace();
@@ -90,6 +90,7 @@ public class OffHeapDefaultDataContainer implements org.infinispan.container.Dat
         try {
             entries = new SharedHashMapBuilder()
                     .generatedValueType(Boolean.TRUE)
+                    .entrySize(512)
                     .create(
                             new File("/dev/shm/offHeapSharedHashMap.DataContainer"),
                             Object.class,
@@ -134,6 +135,7 @@ public class OffHeapDefaultDataContainer implements org.infinispan.container.Dat
         try {
             entries = new SharedHashMapBuilder()
                                 .generatedValueType(Boolean.TRUE)
+                                .entrySize(512)
                                 .create(
                                       new File("/dev/shm/offHeapSharedHashMap.DataContainer"),
                                       Object.class,
