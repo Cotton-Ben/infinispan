@@ -29,9 +29,9 @@ import java.util.Set;
  *
  */
 
-public class JCacheOffHeapImpl extends VanillaSharedHashMap implements DataContainer {
+public class OffHeapCacheImpl extends VanillaSharedHashMap implements DataContainer {
 
-    public JCacheOffHeapImpl(SharedHashMapBuilder builder, File file, Class aClass, Class aClass2) throws IOException {
+    public OffHeapCacheImpl(SharedHashMapBuilder builder, File file, Class aClass, Class aClass2) throws IOException {
         super(builder, file, aClass, aClass2);
 
     }
