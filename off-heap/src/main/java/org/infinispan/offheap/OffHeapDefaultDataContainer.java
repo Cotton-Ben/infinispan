@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 
 //import static org.infinispan.commons.util.CollectionFactory.makeConcurrentParallelMap;
 
@@ -57,7 +58,7 @@ public class OffHeapDefaultDataContainer implements org.infinispan.container.Dat
     private static final Log log = LogFactory.getLog(DefaultDataContainer.class);
     private static final boolean trace = log.isTraceEnabled();
 
-    protected SharedHashMap<Object, InternalCacheEntry> entries = null;
+    protected ConcurrentMap<Object, InternalCacheEntry> entries = null;
     protected InternalEntryFactory entryFactory;
     final protected DefaultEvictionListener evictionListener;
     private EvictionManager evictionManager;
