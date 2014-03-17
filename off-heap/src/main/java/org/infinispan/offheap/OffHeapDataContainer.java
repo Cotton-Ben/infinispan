@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.util.AbstractCollection;
 import java.util.AbstractSet;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -202,6 +201,7 @@ public class OffHeapDataContainer implements org.infinispan.container.DataContai
     @Override
     public Set<Object> keySet() {
         return null;
+        //return entries.keySet();
     }
 
 //    //@Override
