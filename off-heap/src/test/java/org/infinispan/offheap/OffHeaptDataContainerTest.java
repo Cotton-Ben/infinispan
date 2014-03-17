@@ -29,6 +29,7 @@ import static org.testng.AssertJUnit.assertEquals;
  * modeled from RedHat's original SimpleDataContainerTest.java
  */
 
+
 @Test(groups = "unit", testName = "offheap.OffHeapDataContainerTest")
 public class OffHeaptDataContainerTest extends AbstractInfinispanTest {
     DataContainer dc;
@@ -60,6 +61,7 @@ public class OffHeaptDataContainerTest extends AbstractInfinispanTest {
         );
         return dc;
     }
+
 
     public void testExpiredData() throws InterruptedException {
         dc.put("k", "v", new EmbeddedMetadata.Builder().maxIdle(100, TimeUnit.MINUTES).build());
@@ -96,6 +98,7 @@ public class OffHeaptDataContainerTest extends AbstractInfinispanTest {
         assert dc.size() == 0;
     }
 
+
     public void testResetOfCreationTime() throws Exception {
         long now = System.currentTimeMillis();
         dc.put("k", "v", new EmbeddedMetadata.Builder().lifespan(1000, TimeUnit.SECONDS).build());
@@ -106,6 +109,7 @@ public class OffHeaptDataContainerTest extends AbstractInfinispanTest {
         long created2 = dc.get("k").getCreated();
         assert created2 > created1 : "Expected " + created2 + " to be greater than " + created1;
     }
+
 
     public void testUpdatingLastUsed() throws Exception {
         long idle = 600000;
@@ -182,6 +186,7 @@ public class OffHeaptDataContainerTest extends AbstractInfinispanTest {
         assertContainerEntry(mortaltype(), value);
     }
 
+
     private void assertContainerEntry(Class<? extends InternalCacheEntry> type,
                                       String expectedValue) {
         assert dc.containsKey("k");
@@ -190,6 +195,7 @@ public class OffHeaptDataContainerTest extends AbstractInfinispanTest {
         assertEquals(expectedValue, entry.getValue());
     }
 
+
     public void testKeySet() {
         dc.put("k1", "v", new EmbeddedMetadata.Builder().lifespan(100, TimeUnit.MINUTES).build());
         dc.put("k2", "v", new EmbeddedMetadata.Builder().build());
@@ -197,16 +203,19 @@ public class OffHeaptDataContainerTest extends AbstractInfinispanTest {
         dc.put("k4", "v", new EmbeddedMetadata.Builder()
                 .maxIdle(100, TimeUnit.MINUTES).lifespan(100, TimeUnit.MINUTES).build());
 
-        Set expected = new HashSet();
+        Set<String> expected = new HashSet<String>();
         expected.add("k1");
         expected.add("k2");
         expected.add("k3");
         expected.add("k4");
 
-        for (Object o : dc.keySet()) assert expected.remove(o);
+        for (Object o : dc.keySet()) {
+            assert expected.remove(o);
+        }
 
         assert expected.isEmpty() : "Did not see keys " + expected + " in iterator!";
     }
+
 
     public void testContainerIteration() {
         dc.put("k1", "v", new EmbeddedMetadata.Builder().lifespan(100, TimeUnit.MINUTES).build());
@@ -215,7 +224,7 @@ public class OffHeaptDataContainerTest extends AbstractInfinispanTest {
         dc.put("k4", "v", new EmbeddedMetadata.Builder()
                 .maxIdle(100, TimeUnit.MINUTES).lifespan(100, TimeUnit.MINUTES).build());
 
-        Set expected = new HashSet();
+        Set<String> expected = new HashSet<String>();
         expected.add("k1");
         expected.add("k2");
         expected.add("k3");
@@ -228,6 +237,7 @@ public class OffHeaptDataContainerTest extends AbstractInfinispanTest {
         assert expected.isEmpty() : "Did not see keys " + expected + " in iterator!";
     }
 
+
     public void testKeys() {
         dc.put("k1", "v1", new EmbeddedMetadata.Builder().lifespan(100, TimeUnit.MINUTES).build());
         dc.put("k2", "v2", new EmbeddedMetadata.Builder().build());
@@ -235,7 +245,7 @@ public class OffHeaptDataContainerTest extends AbstractInfinispanTest {
         dc.put("k4", "v4", new EmbeddedMetadata.Builder()
                 .maxIdle(100, TimeUnit.MINUTES).lifespan(100, TimeUnit.MINUTES).build());
 
-        Set expected = new HashSet();
+        Set<String> expected = new HashSet<String>();
         expected.add("k1");
         expected.add("k2");
         expected.add("k3");
@@ -246,6 +256,7 @@ public class OffHeaptDataContainerTest extends AbstractInfinispanTest {
         assert expected.isEmpty() : "Did not see keys " + expected + " in iterator!";
     }
 
+
     public void testValues() {
         dc.put("k1", "v1", new EmbeddedMetadata.Builder().lifespan(100, TimeUnit.MINUTES).build());
         dc.put("k2", "v2", new EmbeddedMetadata.Builder().build());
@@ -253,7 +264,7 @@ public class OffHeaptDataContainerTest extends AbstractInfinispanTest {
         dc.put("k4", "v4", new EmbeddedMetadata.Builder()
                 .maxIdle(100, TimeUnit.MINUTES).lifespan(100, TimeUnit.MINUTES).build());
 
-        Set expected = new HashSet();
+        Set<String> expected = new HashSet<String>();
         expected.add("v1");
         expected.add("v2");
         expected.add("v3");
@@ -264,6 +275,7 @@ public class OffHeaptDataContainerTest extends AbstractInfinispanTest {
         assert expected.isEmpty() : "Did not see keys " + expected + " in iterator!";
     }
 
+
     public void testEntrySet() {
         dc.put("k1", "v1", new EmbeddedMetadata.Builder().lifespan(100, TimeUnit.MINUTES).build());
         dc.put("k2", "v2", new EmbeddedMetadata.Builder().build());
@@ -271,17 +283,18 @@ public class OffHeaptDataContainerTest extends AbstractInfinispanTest {
         dc.put("k4", "v4", new EmbeddedMetadata.Builder()
                 .maxIdle(100, TimeUnit.MINUTES).lifespan(100, TimeUnit.MINUTES).build());
 
-        Set expected = new HashSet();
+        Set<InternalCacheEntry> expected = new HashSet<InternalCacheEntry>();
         expected.add(CoreImmutables.immutableInternalCacheEntry(dc.get("k1")));
         expected.add(CoreImmutables.immutableInternalCacheEntry(dc.get("k2")));
         expected.add(CoreImmutables.immutableInternalCacheEntry(dc.get("k3")));
         expected.add(CoreImmutables.immutableInternalCacheEntry(dc.get("k4")));
 
-        Set actual = new HashSet();
-        for (Map.Entry o : dc.entrySet()) actual.add(o);
+        Set<Map.Entry<Object,Object>> actual = new HashSet<Map.Entry<Object, Object>>();
+        for (Map.Entry<Object, Object> o : dc.entrySet()) actual.add(o);
 
         assert actual.equals(expected) : "Expected to see keys " + expected + " but only saw " + actual;
     }
+
 
     public void testGetDuringKeySetLoop() {
         for (int i = 0; i < 10; i++) dc.put(i, "value", new EmbeddedMetadata.Builder().build());
