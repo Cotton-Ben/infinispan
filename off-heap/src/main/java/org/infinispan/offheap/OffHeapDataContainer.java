@@ -53,7 +53,7 @@ import java.util.concurrent.ConcurrentMap;
  * @since 4.0
  */
 //@ThreadSafe
-public class OffHeapDefaultDataContainer implements org.infinispan.container.DataContainer {
+public class OffHeapDataContainer implements org.infinispan.container.DataContainer {
 
     private static final Log log = LogFactory.getLog(DefaultDataContainer.class);
     private static final boolean trace = log.isTraceEnabled();
@@ -67,13 +67,36 @@ public class OffHeapDefaultDataContainer implements org.infinispan.container.Dat
     private PersistenceManager pm;
     private TimeService timeService;
 
-    public OffHeapDefaultDataContainer(int concurrencyLevel) {
+    public OffHeapDataContainer(Class kClazz, Class vClazz,
+                                String operandFileName,
+                                int concurrencyLevel,
+                                int entrySize,
+                                int segSize
+                                )    {
+        try {
+            entries = new SharedHashMapBuilder()
+                    .generatedValueType(Boolean.TRUE)
+                    .entrySize(entrySize)
+                    .minSegments(concurrencyLevel)
+                    .create(
+                            new File("/dev/shm/" + operandFileName),
+                            kClazz,
+                            vClazz
+                    );
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        evictionListener = null;
+    }
+
+    public OffHeapDataContainer(int concurrencyLevel) {
         // If no comparing implementations passed, could fallback on JDK CHM
         // REDHAT:entries = makeConcurrentParallelMap(128, concurrencyLevel);
         try {
             entries = new SharedHashMapBuilder()
                     .generatedValueType(Boolean.TRUE)
                     .entrySize(512)
+                    .minSegments(concurrencyLevel)
                     .create(
                             new File("/dev/shm/offHeapSharedHashMap.DataContainer"),
                             Object.class,
@@ -85,7 +108,7 @@ public class OffHeapDefaultDataContainer implements org.infinispan.container.Dat
         evictionListener = null;
     }
 
-    public OffHeapDefaultDataContainer(int concurrencyLevel, Equivalence keyEq, Equivalence valueEq) {
+    public OffHeapDataContainer(int concurrencyLevel, Equivalence keyEq, Equivalence valueEq) {
         // If at least one comparing implementation give, use ComparingCHMv8
         //entries = makeConcurrentParallelMap(128, concurrencyLevel, keyEq, valueEq);
         try {
@@ -103,7 +126,7 @@ public class OffHeapDefaultDataContainer implements org.infinispan.container.Dat
         evictionListener = null;
     }
 
-    protected OffHeapDefaultDataContainer(int concurrencyLevel,
+    protected OffHeapDataContainer(int concurrencyLevel,
                                           int maxEntries,
                                           EvictionStrategy strategy,
                                           EvictionThreadPolicy policy,
