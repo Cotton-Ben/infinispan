@@ -10,12 +10,15 @@
     <artifactId>infinispan-off-heap</artifactId>
     <packaging>bundle</packaging>
     <name>Infinispan Off-Heap implementation (OpenHFT)</name>
-    <description>Infinispan Off-Heap implementation (OpenHFT</description>
+    <description>Infinispan Off-Heap implementation (OpenHFT)</description>
 
     <!-- This module declares components that either has lifecycle (@Start or
        @Stop) or uses @Inject to retrieve dependencies -->
     <properties>
         <module.skipComponentMetaDataProcessing>false</module.skipComponentMetaDataProcessing>
+        <maven.test.skip.exec>false</maven.test.skip.exec>
+        <skipTests>false</skipTests>
+        <log4j.configuration>false</log4j.configuration>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <pax.exam.version>3.4.0</pax.exam.version>
         <pax.url.version>1.6.0</pax.url.version>
