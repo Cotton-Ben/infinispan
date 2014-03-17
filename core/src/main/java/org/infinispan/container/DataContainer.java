@@ -39,10 +39,12 @@ public interface DataContainer extends Iterable<InternalCacheEntry> {
     * while iterating through the data container using methods like {@link #keySet()} 
     * to avoid changing the underlying collection's order.
     * 
-    * @param k key under which entry is stored
+    *
+    *
+    * @param key key under which entry is stored
     * @return entry, if it exists, or null if not
     */
-   InternalCacheEntry peek(Object k);
+   InternalCacheEntry peek(Object key);
 
    /**
     * Puts an entry in the cache along with metadata adding information such

@@ -20,7 +20,6 @@ import org.infinispan.persistence.manager.PersistenceManager;
 import org.infinispan.persistence.spi.AdvancedCacheLoader;
 import org.infinispan.util.CoreImmutables;
 import org.infinispan.util.TimeService;
-import org.infinispan.util.concurrent.BoundedConcurrentHashMap.Eviction;
 import org.infinispan.util.concurrent.BoundedConcurrentHashMap.EvictionListener;
 
 import java.io.File;
@@ -40,13 +39,11 @@ import java.util.concurrent.ConcurrentMap;
  * OffHeapDefaultDataContainer is both eviction and non-eviction based data container.
  *
  *
- * @author Manik Surtani
- * @author Galder Zamarreño
- * @author Vladimir Blagojevic
- * @author <a href="http://gleamynode.net/">Trustin Lee</a>
- * @author <a href="https://github.com/OpenHFT/">Peter.Lawrey@higherfrequencytrading.com</a>
+ *
+ *
  * @author <a href="https://github.com/dgor/">Dmitry.Gordeev@jpmorgan.com</a>
  * @author <a href="https://github.com/Cotton-Ben/">Ben.Cotton@jpmorgan.com</a>
+ * @author <a href="https://github.com/OpenHFT/">Peter.Lawrey@higherfrequencytrading.com</a>
  *
  *
  * @since 4.0
@@ -57,7 +54,7 @@ public class OffHeapDataContainer implements org.infinispan.container.DataContai
     private static final Log log = LogFactory.getLog(DefaultDataContainer.class);
     private static final boolean trace = log.isTraceEnabled();
 
-    protected ConcurrentMap<Object, InternalCacheEntry> entries = null;
+    protected ConcurrentMap<String, BondVOInterface> entries = null;
     protected InternalEntryFactory entryFactory;
     final protected DefaultEvictionListener evictionListener;
     private EvictionManager evictionManager;
@@ -66,7 +63,9 @@ public class OffHeapDataContainer implements org.infinispan.container.DataContai
     private PersistenceManager pm;
     private TimeService timeService;
 
-    public OffHeapDataContainer(Class kClazz, Class vClazz,
+    public OffHeapDataContainer(
+                                Class<String> keyClazz,
+                                Class<BondVOInterface> valueClazz,
                                 String operandFileName,
                                 int entrySize,
                                 int segSize
@@ -78,8 +77,8 @@ public class OffHeapDataContainer implements org.infinispan.container.DataContai
                     .minSegments(segSize)
                     .create(
                             new File("/dev/shm/" + operandFileName),
-                            kClazz,
-                            vClazz
+                            keyClazz,
+                            valueClazz
                     );
         } catch (IOException e) {
             e.printStackTrace();
@@ -87,90 +86,16 @@ public class OffHeapDataContainer implements org.infinispan.container.DataContai
         evictionListener = null;
     }
 
-    public OffHeapDataContainer(int concurrencyLevel) {
-        // If no comparing implementations passed, could fallback on JDK CHM
-        // REDHAT:entries = makeConcurrentParallelMap(128, concurrencyLevel);
-        try {
-            entries = new SharedHashMapBuilder()
-                    .generatedValueType(Boolean.TRUE)
-                    .entrySize(512)
-                    .minSegments(concurrencyLevel)
-                    .create(
-                            new File("/dev/shm/offHeapSharedHashMap.DataContainer"),
-                            Object.class,
-                            InternalCacheEntry.class
-                    );
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        evictionListener = null;
-    }
 
-    public OffHeapDataContainer(int concurrencyLevel, Equivalence keyEq, Equivalence valueEq) {
-        // If at least one comparing implementation give, use ComparingCHMv8
-        //entries = makeConcurrentParallelMap(128, concurrencyLevel, keyEq, valueEq);
-        try {
-            entries = new SharedHashMapBuilder()
-                    .generatedValueType(Boolean.TRUE)
-                    .entrySize(512)
-                    .create(
-                            new File("/dev/shm/offHeapSharedHashMap.DataContainer"),
-                            Object.class,
-                            InternalCacheEntry.class
-                    );
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        evictionListener = null;
-    }
 
-    protected OffHeapDataContainer(int concurrencyLevel,
-                                          int maxEntries,
-                                          EvictionStrategy strategy,
-                                          EvictionThreadPolicy policy,
-                                          Equivalence keyEquivalence,
-                                          Equivalence valueEquivalence) {
-        // translate eviction policy and strategy
-        switch (policy) {
-            case PIGGYBACK:
-            case DEFAULT:
-                evictionListener = new DefaultEvictionListener();
-                break;
-            default:
-                throw new IllegalArgumentException("No such eviction thread policy " + strategy);
-        }
-
-        Eviction eviction;
-        switch (strategy) {
-            case FIFO:
-            case UNORDERED:
-            case LRU:
-                eviction = Eviction.LRU;
-                break;
-            case LIRS:
-                eviction = Eviction.LIRS;
-                break;
-            default:
-                throw new IllegalArgumentException("No such eviction strategy " + strategy);
-        }
-
-        try {
-            entries = new SharedHashMapBuilder()
-                                .generatedValueType(Boolean.TRUE)
-                                .entrySize(512)
-                                .create(
-                                      new File("/dev/shm/offHeapSharedHashMap.DataContainer"),
-                                      Object.class,
-                                      InternalCacheEntry.class
-                                );
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     @Inject
-    public void initialize(EvictionManager evictionManager, PassivationManager passivator,
-                           InternalEntryFactory entryFactory, ActivationManager activator, PersistenceManager clm, TimeService timeService) {
+    public void initialize(EvictionManager evictionManager,
+                           PassivationManager passivator,
+                           InternalEntryFactory entryFactory,
+                           ActivationManager activator,
+                           PersistenceManager clm,
+                           TimeService timeService) {
         this.evictionManager = evictionManager;
         this.passivator = passivator;
         this.entryFactory = entryFactory;
@@ -179,15 +104,22 @@ public class OffHeapDataContainer implements org.infinispan.container.DataContai
         this.timeService = timeService;
     }
 
-    public static DataContainer boundedDataContainer(int concurrencyLevel, int maxEntries,
-                                                     EvictionStrategy strategy, EvictionThreadPolicy policy,
-                                                     Equivalence keyEquivalence, Equivalence valueEquivalence) {
-        return new DefaultDataContainer(concurrencyLevel, maxEntries, strategy,
-                policy, keyEquivalence, valueEquivalence);
+    public static DataContainer boundedDataContainer(int concurrencyLevel,
+                                                     int maxEntries,
+                                                     EvictionStrategy strategy,
+                                                     EvictionThreadPolicy policy,
+                                                     Equivalence keyEquivalence,
+                                                     Equivalence valueEquivalence) {
+        return new DefaultDataContainer(concurrencyLevel,
+                maxEntries, strategy,
+                policy,
+                keyEquivalence,
+                valueEquivalence);
     }
 
     public static DataContainer unBoundedDataContainer(int concurrencyLevel,
-                                                       Equivalence keyEquivalence, Equivalence valueEquivalence) {
+                                                       Equivalence keyEquivalence,
+                                                       Equivalence valueEquivalence) {
         return new DefaultDataContainer(concurrencyLevel, keyEquivalence, valueEquivalence);
     }
 
@@ -234,7 +166,7 @@ public class OffHeapDataContainer implements org.infinispan.container.DataContai
         if (trace)
             log.tracef("Store %s in container", e);
 
-        entries.put(String.valueOf(k), e);
+        entries.put(String.valueOf(k), (BondVOInterface) e);
     }
 
     private boolean isMortalEntry(InternalCacheEntry e) {
@@ -269,8 +201,13 @@ public class OffHeapDataContainer implements org.infinispan.container.DataContai
 
     @Override
     public Set<Object> keySet() {
-        return Collections.unmodifiableSet(entries.keySet());
+        return null;
     }
+
+//    //@Override
+//    public Set<Object> keySet() {
+//        return Collections.unmodifiableSet(entries.keySet());
+//    }
 
     @Override
     public Collection<Object> values() {
@@ -285,7 +222,7 @@ public class OffHeapDataContainer implements org.infinispan.container.DataContai
     @Override
     public void purgeExpired() {
         long currentTimeMillis = timeService.wallClockTime();
-        for (Iterator<InternalCacheEntry> purgeCandidates = entries.values().iterator(); purgeCandidates.hasNext();) {
+        for (Iterator<BondVOInterface> purgeCandidates = entries.values().iterator(); purgeCandidates.hasNext();) {
             InternalCacheEntry e = purgeCandidates.next();
             if (e.isExpired(currentTimeMillis)) {
                 purgeCandidates.remove();
@@ -323,7 +260,7 @@ public class OffHeapDataContainer implements org.infinispan.container.DataContai
     }
 
     private static class ImmutableEntryIterator extends EntryIterator {
-        ImmutableEntryIterator(Iterator<InternalCacheEntry> it){
+        ImmutableEntryIterator(Iterator<BondVOInterface> it){
             super(it);
         }
 
@@ -335,9 +272,9 @@ public class OffHeapDataContainer implements org.infinispan.container.DataContai
 
     public static class EntryIterator implements Iterator<InternalCacheEntry> {
 
-        private final Iterator<InternalCacheEntry> it;
+        private final Iterator<BondVOInterface> it;
 
-        EntryIterator(Iterator<InternalCacheEntry> it){this.it=it;}
+        EntryIterator(Iterator<BondVOInterface> it){this.it=it;}
 
         @Override
         public InternalCacheEntry next() {
@@ -409,9 +346,9 @@ public class OffHeapDataContainer implements org.infinispan.container.DataContai
     }
 
     private static class ValueIterator implements Iterator<Object> {
-        Iterator<InternalCacheEntry> currentIterator;
+        Iterator<BondVOInterface> currentIterator;
 
-        private ValueIterator(Iterator<InternalCacheEntry> it) {
+        private ValueIterator(Iterator<BondVOInterface> it) {
             currentIterator = it;
         }
 
@@ -432,7 +369,10 @@ public class OffHeapDataContainer implements org.infinispan.container.DataContai
     }
 
     @Override
-    public <K> void executeTask(final AdvancedCacheLoader.KeyFilter<K> filter, final ParallelIterableMap.KeyValueAction<Object, InternalCacheEntry> action) throws InterruptedException{
+    public <K> void executeTask(
+                                    final AdvancedCacheLoader.KeyFilter<K> filter,
+                                    final ParallelIterableMap.KeyValueAction<Object, InternalCacheEntry> action
+                                )   throws InterruptedException{
         if (filter == null)
             throw new IllegalArgumentException("No filter specified");
         if (action == null)

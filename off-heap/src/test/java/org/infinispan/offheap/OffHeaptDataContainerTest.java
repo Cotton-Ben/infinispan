@@ -3,7 +3,6 @@ package org.infinispan.offheap;
 import org.infinispan.container.DataContainer;
 import org.infinispan.container.InternalEntryFactoryImpl;
 import org.infinispan.metadata.EmbeddedMetadata;
-import org.infinispan.commons.equivalence.AnyEquivalence;
 import org.infinispan.container.entries.ImmortalCacheEntry;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.container.entries.MortalCacheEntry;
@@ -21,7 +20,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static org.testng.AssertJUnit.assertEquals;
-import net.openhft.lang.model.constraints.MaxSize;
 
 
 /**
@@ -30,6 +28,7 @@ import net.openhft.lang.model.constraints.MaxSize;
  *
  * modeled from RedHat's original SimpleDataContainerTest.java
  */
+
 @Test(groups = "unit", testName = "offheap.OffHeapDataContainerTest")
 public class OffHeaptDataContainerTest extends AbstractInfinispanTest {
     DataContainer dc;
@@ -44,69 +43,6 @@ public class OffHeaptDataContainerTest extends AbstractInfinispanTest {
         dc = null;
     }
 
-    static interface BondVOInterface {
-
-            /* add support for entry based locking */
-            void busyLockEntry() throws InterruptedException;
-
-            void unlockEntry();
-
-            long getIssueDate();
-
-            void setIssueDate(long issueDate);  /* time in millis */
-
-            long getMaturityDate();
-
-            void setMaturityDate(long maturityDate);  /* time in millis */
-
-            long addAtomicMaturityDate(long toAdd);
-
-            double getCoupon();
-
-            void setCoupon(double coupon);
-
-            double addAtomicCoupon(double toAdd);
-
-            void setSymbol(@MaxSize(20) String symbol);
-
-            String getSymbol();
-
-            // OpenHFT Off-Heap array[ ] processing notice ‘At’ suffix
-            void setMarketPxIntraDayHistoryAt(@MaxSize(7) int tradingDayHour, MarketPx mPx);
-
-    /* 7 Hours in the Trading Day:
-     * index_0 = 9.30am,
-     * index_1 = 10.30am,
-     …,
-     * index_6 = 4.30pm
-     */
-
-            MarketPx getMarketPxIntraDayHistoryAt(int tradingDayHour);
-
-            /* nested interface - empowering an Off-Heap hierarchical “TIER of prices”
-            as array[ ] value */
-            interface MarketPx {
-                double getCallPx();
-
-                void setCallPx(double px);
-
-                double getParPx();
-
-                void setParPx(double px);
-
-                double getMaturityPx();
-
-                void setMaturityPx(double px);
-
-                double getBidPx();
-
-                void setBidPx(double px);
-
-                double getAskPx();
-
-                void setAskPx(double px);
-            }
-        }
 
 
     protected DataContainer createContainer() {

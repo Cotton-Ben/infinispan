@@ -43,7 +43,7 @@ public class OffHeapCacheImpl extends VanillaSharedHashMap implements DataContai
     }
 
     @Override
-    public InternalCacheEntry peek(Object k) {
+    public InternalCacheEntry peek(Object key) {
         return null;
     }
 
