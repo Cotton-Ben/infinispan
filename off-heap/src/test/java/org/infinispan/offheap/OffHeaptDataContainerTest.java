@@ -115,8 +115,7 @@ public class OffHeaptDataContainerTest extends AbstractInfinispanTest {
                            BondVOInterface.class,
                            "BonVoOperand",
                            512,
-                           256,
-                           1
+                           256
         );
         InternalEntryFactoryImpl internalEntryFactory = new InternalEntryFactoryImpl();
         internalEntryFactory.injectTimeService(TIME_SERVICE);

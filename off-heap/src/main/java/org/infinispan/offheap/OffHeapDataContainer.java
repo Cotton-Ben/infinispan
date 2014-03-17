@@ -1,6 +1,5 @@
 package org.infinispan.offheap;
 
-import net.openhft.collections.SharedHashMap;
 import net.openhft.collections.SharedHashMapBuilder;
 import org.infinispan.commons.logging.Log;
 import org.infinispan.commons.logging.LogFactory;
@@ -69,7 +68,6 @@ public class OffHeapDataContainer implements org.infinispan.container.DataContai
 
     public OffHeapDataContainer(Class kClazz, Class vClazz,
                                 String operandFileName,
-                                int concurrencyLevel,
                                 int entrySize,
                                 int segSize
                                 )    {
@@ -77,7 +75,7 @@ public class OffHeapDataContainer implements org.infinispan.container.DataContai
             entries = new SharedHashMapBuilder()
                     .generatedValueType(Boolean.TRUE)
                     .entrySize(entrySize)
-                    .minSegments(concurrencyLevel)
+                    .minSegments(segSize)
                     .create(
                             new File("/dev/shm/" + operandFileName),
                             kClazz,
