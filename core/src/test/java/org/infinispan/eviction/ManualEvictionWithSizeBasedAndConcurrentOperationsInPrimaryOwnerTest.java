@@ -433,8 +433,8 @@ public class ManualEvictionWithSizeBasedAndConcurrentOperationsInPrimaryOwnerTes
       }
 
       @Override
-      public InternalCacheEntry peek(Object k) {
-         return delegate.peek(k);
+      public InternalCacheEntry peek(Object key) {
+         return delegate.peek(key);
       }
 
       @Override

@@ -376,7 +376,7 @@ public class DefaultDataContainer implements DataContainer {
       ParallelIterableMap<Object, InternalCacheEntry> map = (ParallelIterableMap<Object, InternalCacheEntry>) entries;
       map.forEach(512, new ParallelIterableMap.KeyValueAction<Object, InternalCacheEntry>() {
          @Override
-         public void apply(Object key, InternalCacheEntry value) {            
+         public void apply(Object key, InternalCacheEntry value) {
             if (filter.shouldLoadKey((K)key)) {
                action.apply((K)key, value);
             }

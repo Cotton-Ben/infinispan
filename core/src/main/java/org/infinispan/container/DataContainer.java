@@ -39,10 +39,12 @@ public interface DataContainer extends Iterable<InternalCacheEntry> {
     * while iterating through the data container using methods like {@link #keySet()} 
     * to avoid changing the underlying collection's order.
     * 
-    * @param k key under which entry is stored
+    *
+    *
+    * @param key key under which entry is stored
     * @return entry, if it exists, or null if not
     */
-   InternalCacheEntry peek(Object k);
+   InternalCacheEntry peek(Object key);
 
    /**
     * Puts an entry in the cache along with metadata adding information such
@@ -82,11 +84,13 @@ public interface DataContainer extends Iterable<InternalCacheEntry> {
 
    /**
     * Returns a set of keys in the container. When iterating through the container using this method,
-    * clients should never call {@link #get()} method but instead {@link #peek()}, in order to avoid
+    * clients should never call get() method but instead peek(), in order to avoid
     * changing the order of the underlying collection as a side of effect of iterating through it.
     * 
     * @return a set of keys
     */
+   //@org.jetbrains.annotations.NotNull
+   ///@org.jetbrains.annotations.NotNull
    Set<Object> keySet();
 
    /**
