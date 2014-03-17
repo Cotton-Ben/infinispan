@@ -71,9 +71,9 @@ public class DefaultDataContainer implements DataContainer {
       evictionListener = null;
    }
 
-   protected DefaultDataContainer(int concurrencyLevel, int maxEntries,
-         EvictionStrategy strategy, EvictionThreadPolicy policy,
-         Equivalence keyEquivalence, Equivalence valueEquivalence) {
+   public DefaultDataContainer(int concurrencyLevel, int maxEntries,
+                               EvictionStrategy strategy, EvictionThreadPolicy policy,
+                               Equivalence keyEquivalence, Equivalence valueEquivalence) {
       // translate eviction policy and strategy
       switch (policy) {
          case PIGGYBACK:
