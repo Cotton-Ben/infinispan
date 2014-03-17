@@ -6,39 +6,7 @@
     <pluginGroups>
         <pluginGroup>org.jboss.maven.plugins</pluginGroup>
     </pluginGroups>
-<mirrors>
-    <!-- 
-         <mirror>
-      <id>jpmc-public</id>
-      <mirrorOf>*</mirrorOf>
-      <url>http://repo-proxy.jpmchase.net/maven/content/groups/jpmc-public</url>
-    </mirror>
-    -->
-  </mirrors>
-
-
     <profiles>
-    <!--
-       <profile>
-       <id>frs</id>
-       <repositories>
-         <repository>
-           <id>jpmc-public</id>
-           <url>http://repo-proxy.jpmchase.net/maven/content/groups/jpmc-public/</url>
-           <releases><enabled>true</enabled></releases>
-           <snapshots><enabled>true</enabled></snapshots>
-         </repository>
-       </repositories>
-      <pluginRepositories>
-         <pluginRepository>
-           <id>jpmc-public</id>
-           <url>http://repo-proxy.jpmchase.net/maven/content/groups/jpmc-public/</url>
-           <releases><enabled>true</enabled></releases>
-           <snapshots><enabled>true</enabled></snapshots>
-         </pluginRepository>
-       </pluginRepositories>
-     </profile>
---> 
         <profile>
             <id>jboss-public-repository</id>
             <repositories>

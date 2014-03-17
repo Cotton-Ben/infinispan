@@ -45,9 +45,9 @@ public class QueryableDataContainer implements DataContainer {
    }
 
    @Override
-   public InternalCacheEntry peek(Object key) {
-      loggedOperations.add("peek(" + key + ")" );
-      return delegate.peek(key);
+   public InternalCacheEntry peek(Object k) {
+      loggedOperations.add("peek(" + k + ")" );
+      return delegate.peek(k);
    }
 
    @Override

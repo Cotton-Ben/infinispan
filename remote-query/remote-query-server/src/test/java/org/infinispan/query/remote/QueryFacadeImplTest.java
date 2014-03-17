@@ -1,6 +1,6 @@
 package org.infinispan.query.remote;
 
-//import org.infinispan.server.core.QueryFacade;
+import org.infinispan.server.core.QueryFacade;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ public class QueryFacadeImplTest {
 
    /**
     * Test there is exactly one loadable provider.
-
+    */
    public void testProvider() {
       List<QueryFacade> implementations = new ArrayList<QueryFacade>();
       for (QueryFacade impl : ServiceLoader.load(QueryFacade.class)) {
@@ -28,5 +28,4 @@ public class QueryFacadeImplTest {
       assertEquals(1, implementations.size());
       assertEquals(QueryFacadeImpl.class, implementations.get(0).getClass());
    }
-    */
 }
