@@ -69,7 +69,7 @@ interface BondVOInterface extends InternalCacheEntry {
     InternalCacheValue toInternalCacheValue();
 
     @Override
-    InternalCacheEntry clone();
+    OffHeapInternalCacheEntry clone();
 
     @Override
     boolean isNull();

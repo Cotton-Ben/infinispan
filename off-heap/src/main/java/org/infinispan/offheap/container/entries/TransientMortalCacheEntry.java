@@ -1,11 +1,11 @@
-package org.infinispan.container.entries;
+package org.infinispan.offheap.container.entries;
 
-import org.infinispan.metadata.EmbeddedMetadata;
-import org.infinispan.metadata.Metadata;
 import org.infinispan.commons.io.UnsignedNumeric;
 import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.util.Util;
 import org.infinispan.marshall.core.Ids;
+import org.infinispan.metadata.EmbeddedMetadata;
+import org.infinispan.metadata.Metadata;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -165,7 +165,7 @@ public class TransientMortalCacheEntry extends AbstractInternalCacheEntry {
    }
 
    @Override
-   public InternalCacheEntry clone() {
+   public TransientMortalCacheEntry clone() {
       return (TransientMortalCacheEntry) super.clone();
    }
 

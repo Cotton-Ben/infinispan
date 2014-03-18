@@ -1,27 +1,28 @@
-package org.infinispan.container.entries;
+package org.infinispan.offheap.container.entries;
 
 import org.infinispan.metadata.Metadata;
-import org.infinispan.container.DataContainer;
+import org.infinispan.offheap.container.OffHeapDataContainer;
 
 /**
  * An abstract internal cache entry that is typically stored in the data container
  *
- * @author Manik Surtani
- * @since 4.0
+ * @author ben.cotton@jpmorgan.com
+ * @author dmitry.gordeev@jpmorgan.com
+ * @author peter.lawrey@higherfrequencytrading.com
  */
-public abstract class AbstractInternalCacheEntry implements InternalCacheEntry {
+public abstract class OffHeapAbstractInternalCacheEntry implements OffHeapInternalCacheEntry {
 
    protected Object key;
 
-   protected AbstractInternalCacheEntry() {
+   protected OffHeapAbstractInternalCacheEntry() {
    }
 
-   protected AbstractInternalCacheEntry(Object key) {
+   protected OffHeapAbstractInternalCacheEntry(Object key) {
       this.key = key;
    }
 
    @Override
-   public final void commit(DataContainer container, Metadata metadata) {
+   public final void commit(OffHeapDataContainer container, Metadata metadata) {
       // no-op
    }
 
@@ -133,9 +134,9 @@ public abstract class AbstractInternalCacheEntry implements InternalCacheEntry {
    }
 
    @Override
-   public InternalCacheEntry clone() {
+   public OffHeapAbstractInternalCacheEntry clone() {
       try {
-         return (AbstractInternalCacheEntry) super.clone();
+         return (OffHeapAbstractInternalCacheEntry) super.clone();
       } catch (CloneNotSupportedException e) {
          throw new RuntimeException("Should never happen!", e);
       }

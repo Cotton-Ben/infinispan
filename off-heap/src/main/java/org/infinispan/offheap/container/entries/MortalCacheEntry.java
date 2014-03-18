@@ -1,17 +1,16 @@
-package org.infinispan.container.entries;
+package org.infinispan.offheap.container.entries;
 
-import org.infinispan.metadata.EmbeddedMetadata;
-import org.infinispan.metadata.Metadata;
 import org.infinispan.commons.io.UnsignedNumeric;
 import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.util.Util;
 import org.infinispan.marshall.core.Ids;
+import org.infinispan.metadata.EmbeddedMetadata;
+import org.infinispan.metadata.Metadata;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Set;
-
 
 import static org.infinispan.commons.util.Util.toStr;
 
@@ -24,7 +23,7 @@ import static org.infinispan.commons.util.Util.toStr;
  * @author ben.cotton@jpmorgan.com  (OffHeap OpenHFT integration)
  *
  */
-public class MortalCacheEntry extends AbstractInternalCacheEntry {
+public class MortalCacheEntry extends AbstractInternalCacheEntry implements BytesMarshallable{
 
    protected Object value;
    protected long lifespan = -1;
@@ -151,7 +150,7 @@ public class MortalCacheEntry extends AbstractInternalCacheEntry {
    }
 
    @Override
-   public InternalCacheEntry clone() {
+   public MortalCacheEntry clone() {
       return (MortalCacheEntry) super.clone();
    }
 

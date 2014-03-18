@@ -1,10 +1,10 @@
-package org.infinispan.container.entries;
+package org.infinispan.offheap.container.entries;
 
-import org.infinispan.metadata.EmbeddedMetadata;
-import org.infinispan.metadata.Metadata;
 import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.util.Util;
 import org.infinispan.marshall.core.Ids;
+import org.infinispan.metadata.EmbeddedMetadata;
+import org.infinispan.metadata.Metadata;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -19,11 +19,11 @@ import static org.infinispan.commons.util.Util.toStr;
  * @author Manik Surtani
  * @since 4.0
  */
-public class ImmortalCacheEntry extends AbstractInternalCacheEntry {
+public class OffHeapImmortalCacheEntry extends AbstractInternalCacheEntry {
 
    public Object value;
 
-   public ImmortalCacheEntry(Object key, Object value) {
+   public OffHeapImmortalCacheEntry(Object key, Object value) {
       super(key);
       this.value = value;
    }
@@ -135,7 +135,7 @@ public class ImmortalCacheEntry extends AbstractInternalCacheEntry {
    }
 
    @Override
-   public InternalCacheEntry clone() {
+   public ImmortalCacheEntry clone() {
       return (ImmortalCacheEntry) super.clone();
    }
 

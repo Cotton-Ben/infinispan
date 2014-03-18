@@ -53,7 +53,7 @@ public class OffHeapDataContainer implements org.infinispan.container.DataContai
     private static final Log log = LogFactory.getLog(DefaultDataContainer.class);
     private static final boolean trace = log.isTraceEnabled();
 
-    protected ConcurrentMap<String, BondVOInterface> entries = null;
+    protected ConcurrentMap entries;
     protected InternalEntryFactory entryFactory;
     final protected DefaultEvictionListener evictionListener;
     private EvictionManager evictionManager;
@@ -69,6 +69,7 @@ public class OffHeapDataContainer implements org.infinispan.container.DataContai
                                 int entrySize,
                                 int segSize
                                 )    {
+        entries = null;
         try {
             entries = new SharedHashMapBuilder()
                     .generatedValueType(Boolean.TRUE)
@@ -128,7 +129,7 @@ public class OffHeapDataContainer implements org.infinispan.container.DataContai
 
     @Override
     public InternalCacheEntry peek(Object key) {
-        return entries.get(key);
+        return (InternalCacheEntry) entries.get(key);
     }
 
     @Override
@@ -148,11 +149,11 @@ public class OffHeapDataContainer implements org.infinispan.container.DataContai
 
     @Override
     public void put(Object k, Object v, Metadata metadata) {
-        InternalCacheEntry e = entries.get(k);
+       InternalCacheEntry e = (InternalCacheEntry) entries.get(k);
         if (e != null) {
             e.setValue(v);
-            InternalCacheEntry original = e;
-            e = entryFactory.update(e, metadata);
+            Object original = e;
+            e = entryFactory.update((InternalCacheEntry) e, metadata);
             // we have the same instance. So we need to reincarnate, if mortal.
             if (isMortalEntry(e) && original == e) {
                 e.reincarnate(timeService.wallClockTime());
@@ -165,7 +166,7 @@ public class OffHeapDataContainer implements org.infinispan.container.DataContai
         if (trace)
             log.tracef("Store %s in container", e);
 
-        entries.put(String.valueOf(k), (BondVOInterface) e);
+        entries.put(String.valueOf(k),  e);
     }
 
     private boolean isMortalEntry(InternalCacheEntry e) {
@@ -184,7 +185,7 @@ public class OffHeapDataContainer implements org.infinispan.container.DataContai
 
     @Override
     public InternalCacheEntry remove(Object k) {
-        InternalCacheEntry e = entries.remove(k);
+        InternalCacheEntry e = (InternalCacheEntry) entries.remove(k);
         return e == null || (e.canExpire() && e.isExpired(timeService.wallClockTime())) ? null : e;
     }
 
@@ -306,7 +307,7 @@ public class OffHeapDataContainer implements org.infinispan.container.DataContai
 
             @SuppressWarnings("rawtypes")
             Map.Entry e = (Map.Entry) o;
-            InternalCacheEntry ice = entries.get(e.getKey());
+            InternalCacheEntry ice = (InternalCacheEntry) entries.get(e.getKey());
             if (ice == null) {
                 return false;
             }
