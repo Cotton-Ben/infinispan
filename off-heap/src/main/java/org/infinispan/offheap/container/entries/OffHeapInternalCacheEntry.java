@@ -1,5 +1,7 @@
 package org.infinispan.offheap.container.entries;
 
+import org.infinispan.container.entries.InternalCacheEntry;
+
 /**
  * Interface for internal off-heap cache entries that expose whether an entry has expired.
  *
@@ -7,7 +9,7 @@ package org.infinispan.offheap.container.entries;
  * @author dmitry.gordeev@jpmorgan.com
  * @author peter.lawrey@higherfrequencytrading.com
  */
-public interface OffHeapInternalCacheEntry extends OffHeapCacheEntry, Cloneable {
+public interface OffHeapInternalCacheEntry extends OffHeapCacheEntry, InternalCacheEntry,Cloneable {
 
    /**
     * @param now the current time as defined by {@link System#currentTimeMillis()} or {@link

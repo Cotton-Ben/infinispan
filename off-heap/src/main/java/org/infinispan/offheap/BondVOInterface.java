@@ -3,13 +3,15 @@ package org.infinispan.offheap;
 import net.openhft.lang.model.constraints.MaxSize;
 import org.infinispan.container.DataContainer;
 import org.infinispan.container.entries.InternalCacheEntry;
-import org.infinispan.container.entries.InternalCacheValue;
 import org.infinispan.metadata.Metadata;
+import org.infinispan.offheap.container.OffHeapDataContainer;
+import org.infinispan.offheap.container.entries.OffHeapInternalCacheEntry;
+import org.infinispan.offheap.container.entries.OffHeapInternalCacheValue;
 
 /**
  *
  */
-interface BondVOInterface extends InternalCacheEntry {
+interface BondVOInterface extends OffHeapInternalCacheEntry {
 
     /* add support for entry based locking */
     void busyLockEntry() throws InterruptedException;
@@ -66,7 +68,7 @@ interface BondVOInterface extends InternalCacheEntry {
     void reincarnate(long now);
 
     @Override
-    InternalCacheValue toInternalCacheValue();
+    OffHeapInternalCacheValue toInternalCacheValue();
 
     @Override
     OffHeapInternalCacheEntry clone();
@@ -117,7 +119,7 @@ interface BondVOInterface extends InternalCacheEntry {
     int hashCode();
 
     @Override
-    void commit(DataContainer container, Metadata metadata);
+    void commit(OffHeapDataContainer container, Metadata metadata);
 
     @Override
     void rollback();

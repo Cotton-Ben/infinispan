@@ -110,7 +110,7 @@ public class TransientCacheEntry extends AbstractInternalCacheEntry {
     }
 
     @Override
-    public InternalCacheValue toInternalCacheValue() {
+    public OffHeapInternalCacheValue toInternalCacheValue() {
         return new TransientCacheValue(value, maxIdle, lastUsed);
     }
 

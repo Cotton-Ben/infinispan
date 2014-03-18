@@ -2,6 +2,7 @@ package org.infinispan.offheap.container.entries;
 
 import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.util.Util;
+import org.infinispan.container.entries.ImmortalCacheValue;
 import org.infinispan.marshall.core.Ids;
 import org.infinispan.metadata.EmbeddedMetadata;
 import org.infinispan.metadata.Metadata;
@@ -12,7 +13,7 @@ import java.io.ObjectOutput;
 import java.util.Set;
 
 /**
- * An immortal cache value, to correspond with {@link ImmortalCacheEntry}
+ * An immortal cache value, to correspond with {@link OffHeapImmortalCacheEntry}
  *
  * @author Manik Surtani
  * @since 4.0
@@ -24,13 +25,13 @@ public class OffHeapImmortalCacheValue implements OffHeapInternalCacheValue, Clo
 
    public Object value;
 
-   public ImmortalCacheValue(Object value) {
+   public OffHeapImmortalCacheValue(Object value) {
       this.value = value;
    }
 
    @Override
    public OffHeapInternalCacheEntry toInternalCacheEntry(Object key) {
-      return new OffHeapImmortalCacheEntry(key, value);
+      return (OffHeapInternalCacheEntry) new OffHeapImmortalCacheEntry(key, value);
    }
 
    public final Object setValue(Object value) {
@@ -92,7 +93,7 @@ public class OffHeapImmortalCacheValue implements OffHeapInternalCacheValue, Clo
    @Override
    public boolean equals(Object o) {
       if (this == o) return true;
-      if (!(o instanceof ImmortalCacheValue)) return false;
+      if (!(o instanceof OffHeapImmortalCacheValue)) return false;
 
       ImmortalCacheValue that = (ImmortalCacheValue) o;
 

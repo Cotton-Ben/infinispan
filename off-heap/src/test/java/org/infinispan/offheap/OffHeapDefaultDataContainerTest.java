@@ -1,6 +1,7 @@
 package org.infinispan.offheap;
 
-import org.infinispan.container.DataContainer;
+import org.infinispan.offheap.container.OffHeapDataContainer;
+import org.infinispan.offheap.container.OffHeapDefaultDataContainer;
 import org.infinispan.container.InternalEntryFactoryImpl;
 import org.infinispan.metadata.EmbeddedMetadata;
 import org.infinispan.container.entries.ImmortalCacheEntry;
@@ -31,8 +32,8 @@ import static org.testng.AssertJUnit.assertEquals;
 
 
 @Test(groups = "unit", testName = "offheap.OffHeapDataContainerTest")
-public class OffHeaptDataContainerTest extends AbstractInfinispanTest {
-    DataContainer dc;
+public class OffHeapDefaultDataContainerTest extends AbstractInfinispanTest {
+    OffHeapDataContainer dc;
 
     @BeforeMethod
     public void setUp() {
@@ -46,11 +47,11 @@ public class OffHeaptDataContainerTest extends AbstractInfinispanTest {
 
 
 
-    protected DataContainer createContainer() {
-        OffHeapDataContainer dc = new OffHeapDataContainer(
+    protected OffHeapDataContainer createContainer() {
+        OffHeapDefaultDataContainer dc = new OffHeapDefaultDataContainer(
                            String.class,
                            BondVOInterface.class,
-                           "BonVoOperand",
+                           "BondVoOperand",
                            512,
                            256
         );

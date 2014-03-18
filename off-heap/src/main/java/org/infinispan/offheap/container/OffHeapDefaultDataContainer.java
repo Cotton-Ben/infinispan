@@ -9,10 +9,11 @@ import org.infinispan.commons.util.concurrent.ParallelIterableMap;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.eviction.*;
 import org.infinispan.factories.annotations.Inject;
+import org.infinispan.offheap.OffHeapCacheImpl;
 import org.infinispan.offheap.container.entries.OffHeapInternalCacheEntry;
 import org.infinispan.persistence.manager.PersistenceManager;
 import org.infinispan.persistence.spi.AdvancedCacheLoader;
-import org.infinispan.util.CoreImmutables;
+import org.infinispan.offheap.util.CoreImmutables;
 import org.infinispan.util.TimeService;
 import org.infinispan.util.concurrent.BoundedConcurrentHashMap;
 import org.infinispan.util.concurrent.BoundedConcurrentHashMap.Eviction;
@@ -29,7 +30,7 @@ import java.util.concurrent.ConcurrentMap;
  * @author peter.lawrey@higherfrequencytrading.com
  */
 @ThreadSafe
-public class OffHeapDefaultDataContainer implements OffHeapDataContainer {
+public class OffHeapDefaultDataContainer<T> implements OffHeapDataContainer {
 
    private static final Log log = LogFactory.getLog(OffHeapDefaultDataContainer.class);
    private static final boolean trace = log.isTraceEnabled();
@@ -227,10 +228,19 @@ public class OffHeapDefaultDataContainer implements OffHeapDataContainer {
       }
    }
 
-   @SuppressWarnings("unchecked")
+    @Override
+    public <K> void executeTask(
+            AdvancedCacheLoader.KeyFilter<K> filter,
+            ParallelIterableMap.KeyValueAction<Object, OffHeapInternalCacheEntry> action
+    ) throws InterruptedException {
+
+    }
+
+
    @Override
-   public Iterator<OffHeapInternalCacheEntry> iterator() {
-      return new EntryIterator(entries.values().iterator());
+   public Iterator iterator() {
+
+      return new EntryIterator( entries.values().iterator() );
    }
 
    private final class DefaultEvictionListener implements EvictionListener<Object, InternalCacheEntry> {
@@ -265,7 +275,7 @@ public class OffHeapDefaultDataContainer implements OffHeapDataContainer {
       @Override
       public OffHeapInternalCacheEntry next() {
          return CoreImmutables.immutableInternalCacheEntry(super.next());
-      }
+   }
    }
 
    public static class EntryIterator implements Iterator<OffHeapInternalCacheEntry> {

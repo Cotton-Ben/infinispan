@@ -2,6 +2,9 @@ package org.infinispan.offheap.container.entries;
 
 import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.util.Util;
+import org.infinispan.container.entries.AbstractInternalCacheEntry;
+import org.infinispan.container.entries.ImmortalCacheValue;
+import org.infinispan.container.entries.InternalCacheValue;
 import org.infinispan.marshall.core.Ids;
 import org.infinispan.metadata.EmbeddedMetadata;
 import org.infinispan.metadata.Metadata;
@@ -119,7 +122,7 @@ public class OffHeapImmortalCacheEntry extends AbstractInternalCacheEntry {
       if (this == o) return true;
       if (o == null || getClass() != o.getClass()) return false;
 
-      ImmortalCacheEntry that = (ImmortalCacheEntry) o;
+      OffHeapImmortalCacheEntry that = (OffHeapImmortalCacheEntry) o;
 
       if (key != null ? !key.equals(that.key) : that.key != null) return false;
       if (value != null ? !value.equals(that.value) : that.value != null) return false;
@@ -135,22 +138,22 @@ public class OffHeapImmortalCacheEntry extends AbstractInternalCacheEntry {
    }
 
    @Override
-   public ImmortalCacheEntry clone() {
-      return (ImmortalCacheEntry) super.clone();
+   public OffHeapImmortalCacheEntry clone() {
+      return (OffHeapImmortalCacheEntry) super.clone();
    }
 
-   public static class Externalizer extends AbstractExternalizer<ImmortalCacheEntry> {
+   public static class Externalizer extends AbstractExternalizer<OffHeapImmortalCacheEntry> {
       @Override
-      public void writeObject(ObjectOutput output, ImmortalCacheEntry ice) throws IOException {
+      public void writeObject(ObjectOutput output, OffHeapImmortalCacheEntry ice) throws IOException {
          output.writeObject(ice.key);
          output.writeObject(ice.value);
       }
 
       @Override
-      public ImmortalCacheEntry readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+      public OffHeapImmortalCacheEntry readObject(ObjectInput input) throws IOException, ClassNotFoundException {
          Object k = input.readObject();
          Object v = input.readObject();
-         return new ImmortalCacheEntry(k, v);
+         return new OffHeapImmortalCacheEntry(k, v);
       }
 
       @Override
@@ -159,8 +162,8 @@ public class OffHeapImmortalCacheEntry extends AbstractInternalCacheEntry {
       }
 
       @Override
-      public Set<Class<? extends ImmortalCacheEntry>> getTypeClasses() {
-         return Util.<Class<? extends ImmortalCacheEntry>>asSet(ImmortalCacheEntry.class);
+      public Set<Class<? extends OffHeapImmortalCacheEntry>> getTypeClasses() {
+         return Util.<Class<? extends OffHeapImmortalCacheEntry>>asSet(OffHeapImmortalCacheEntry.class);
       }
    }
 

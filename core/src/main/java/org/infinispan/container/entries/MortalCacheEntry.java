@@ -112,7 +112,7 @@ public class MortalCacheEntry extends AbstractInternalCacheEntry {
    }
 
    @Override
-   public InternalCacheValue toInternalCacheValue() {
+   public OffHeapInternalCacheValue toInternalCacheValue() {
       return new MortalCacheValue(value, created, lifespan);
    }
 

@@ -91,7 +91,7 @@ public class TransientMortalCacheEntry extends AbstractInternalCacheEntry {
 
 
    @Override
-   public InternalCacheValue toInternalCacheValue() {
+   public OffHeapInternalCacheValue toInternalCacheValue() {
       return new TransientMortalCacheValue(value, created, lifespan, maxIdle, lastUsed);
    }
 

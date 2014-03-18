@@ -125,8 +125,10 @@ public interface OffHeapDataContainer extends Iterable<InternalCacheEntry> {
     * @throws InterruptedException
     */
 
+
+
     <K> void executeTask(
             AdvancedCacheLoader.KeyFilter<K> filter,
-            ParallelIterableMap.KeyValueAction<Object, OffHeapInternalCacheEntry> action
+            ParallelIterableMap.KeyValueAction<Object, InternalCacheEntry> action
     ) throws InterruptedException;
 }

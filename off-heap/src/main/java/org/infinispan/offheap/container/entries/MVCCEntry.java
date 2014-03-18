@@ -10,7 +10,7 @@ import org.infinispan.offheap.container.OffHeapDataContainer;
  * @author Manik Surtani
  * @since 4.0
  */
-public interface MVCCEntry extends CacheEntry, StateChangingEntry {
+public interface MVCCEntry extends OffHeapCacheEntry, StateChangingEntry {
 
     long getLifespan();
 
@@ -21,7 +21,7 @@ public interface MVCCEntry extends CacheEntry, StateChangingEntry {
     *
     * @param container      data container
     */
-   void copyForUpdate(DataContainer container);
+   void copyForUpdate(OffHeapDataContainer container);
 
     Object getKey();
 

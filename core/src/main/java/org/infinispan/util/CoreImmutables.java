@@ -24,10 +24,11 @@ public class CoreImmutables extends Immutables {
     * Wraps a {@link InternalCacheEntry}} with an immutable {@link InternalCacheEntry}}. There is no copying involved.
     *
     *
+    *
     * @param entry the internal cache entry to wrap.
     * @return an immutable {@link InternalCacheEntry}} wrapper that delegates to the original entry.
     */
-   public static InternalCacheEntry immutableInternalCacheEntry(InternalCacheEntry entry) {
+   public static InternalCacheEntry immutableInternalCacheEntry(OffHeapInternalCacheEntry entry) {
       return new ImmutableInternalCacheEntry(entry);
    }
 
@@ -120,7 +121,7 @@ public class CoreImmutables extends Immutables {
       }
 
       @Override
-      public InternalCacheValue toInternalCacheValue() {
+      public OffHeapInternalCacheValue toInternalCacheValue() {
          return new CoreImmutables.ImmutableInternalCacheValue(this);
       }
 
