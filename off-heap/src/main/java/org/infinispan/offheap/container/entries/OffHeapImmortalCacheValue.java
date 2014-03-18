@@ -6,6 +6,10 @@ import org.infinispan.container.entries.ImmortalCacheValue;
 import org.infinispan.marshall.core.Ids;
 import org.infinispan.metadata.EmbeddedMetadata;
 import org.infinispan.metadata.Metadata;
+import org.infinispan.offheap.commons.marshall.OffHeapAbstractExternalizer;
+import org.infinispan.offheap.commons.util.concurrent.OffHeapUtil;
+import org.infinispan.offheap.metadata.OffHeapEmbeddedMetadata;
+import org.infinispan.offheap.metadata.OffHeapMetadata;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -86,8 +90,11 @@ public class OffHeapImmortalCacheValue implements OffHeapInternalCacheValue, Clo
    }
 
    @Override
-   public Metadata getMetadata() {
-      return new EmbeddedMetadata.Builder().lifespan(getLifespan()).maxIdle(getMaxIdle()).build();
+   public OffHeapMetadata getMetadata() {
+      return new OffHeapEmbeddedMetadata.OffHeapBuilder()
+              .lifespan(getLifespan())
+              .maxIdle(getMaxIdle())
+              .build();
    }
 
    @Override
@@ -115,24 +122,24 @@ public class OffHeapImmortalCacheValue implements OffHeapInternalCacheValue, Clo
    }
 
    @Override
-   public ImmortalCacheValue clone() {
+   public OffHeapImmortalCacheValue clone() {
       try {
-         return (ImmortalCacheValue) super.clone();
+         return (OffHeapImmortalCacheValue) super.clone();
       } catch (CloneNotSupportedException e) {
          throw new RuntimeException("Should never happen", e);
       }
    }
 
-   public static class Externalizer extends AbstractExternalizer<ImmortalCacheValue> {
+   public static class Externalizer extends OffHeapAbstractExternalizer<OffHeapImmortalCacheValue> {
       @Override
-      public void writeObject(ObjectOutput output, ImmortalCacheValue icv) throws IOException {
+      public void writeObject(ObjectOutput output, OffHeapImmortalCacheValue icv) throws IOException {
          output.writeObject(icv.value);
       }
 
       @Override
-      public ImmortalCacheValue readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+      public OffHeapImmortalCacheValue readObject(ObjectInput input) throws IOException, ClassNotFoundException {
          Object v = input.readObject();
-         return new ImmortalCacheValue(v);
+         return new OffHeapImmortalCacheValue(v);
       }
 
       @Override
@@ -141,8 +148,10 @@ public class OffHeapImmortalCacheValue implements OffHeapInternalCacheValue, Clo
       }
 
       @Override
-      public Set<Class<? extends ImmortalCacheValue>> getTypeClasses() {
-         return Util.<Class<? extends ImmortalCacheValue>>asSet(ImmortalCacheValue.class);
+      public Set<Class<? extends OffHeapImmortalCacheValue>> getTypeClasses() {
+         return OffHeapUtil.<Class<? extends OffHeapImmortalCacheValue>>asSet(
+                 OffHeapImmortalCacheValue.class
+         );
       }
    }
 }

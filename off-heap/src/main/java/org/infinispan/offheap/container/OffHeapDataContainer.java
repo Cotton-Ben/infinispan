@@ -7,6 +7,7 @@ import org.infinispan.factories.scopes.Scope;
 import org.infinispan.factories.scopes.Scopes;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.offheap.container.entries.OffHeapInternalCacheEntry;
+import org.infinispan.offheap.metadata.OffHeapMetadata;
 import org.infinispan.persistence.spi.AdvancedCacheLoader;
 
 import java.util.Collection;
@@ -21,7 +22,7 @@ import java.util.Set;
  *
  */
 @Scope(Scopes.NAMED_CACHE)
-public interface OffHeapDataContainer extends Iterable<InternalCacheEntry> {
+public interface OffHeapDataContainer extends Iterable<OffHeapInternalCacheEntry> {
 
    /**
     * Retrieves a cached entry
@@ -55,9 +56,9 @@ public interface OffHeapDataContainer extends Iterable<InternalCacheEntry> {
     * @param v value to store
     * @param metadata metadata of the entry
     */
-   void put(Object k, Object v, Metadata metadata);
+   void put(Object k, Object v, OffHeapMetadata metadata);
 
-   void put(Object k, Object v, org.infinispan.offheap.metadata.Metadata metadata);
+
 
     /**
     * Tests whether an entry exists in the container
@@ -129,6 +130,6 @@ public interface OffHeapDataContainer extends Iterable<InternalCacheEntry> {
 
     <K> void executeTask(
             AdvancedCacheLoader.KeyFilter<K> filter,
-            ParallelIterableMap.KeyValueAction<Object, InternalCacheEntry> action
+            ParallelIterableMap.KeyValueAction<Object, OffHeapInternalCacheEntry> action
     ) throws InterruptedException;
 }

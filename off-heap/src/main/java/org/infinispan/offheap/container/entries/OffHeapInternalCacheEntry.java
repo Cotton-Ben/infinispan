@@ -1,6 +1,7 @@
 package org.infinispan.offheap.container.entries;
 
 import org.infinispan.container.entries.InternalCacheEntry;
+import org.infinispan.offheap.metadata.OffHeapMetadata;
 
 /**
  * Interface for internal off-heap cache entries that expose whether an entry has expired.
@@ -9,7 +10,7 @@ import org.infinispan.container.entries.InternalCacheEntry;
  * @author dmitry.gordeev@jpmorgan.com
  * @author peter.lawrey@higherfrequencytrading.com
  */
-public interface OffHeapInternalCacheEntry extends OffHeapCacheEntry, InternalCacheEntry,Cloneable {
+public interface OffHeapInternalCacheEntry extends OffHeapCacheEntry,Cloneable {
 
    /**
     * @param now the current time as defined by {@link System#currentTimeMillis()} or {@link
@@ -77,7 +78,7 @@ public interface OffHeapInternalCacheEntry extends OffHeapCacheEntry, InternalCa
    void reincarnate(long now);
 
    /**
-    * Creates a representation of this entry as an {@link org.infinispan.offheap.container.entries.InternalCacheValue}. The main
+    * Creates a representation of this entry as an {@link org.infinispan.offheap.container.entries.OffHeapInternalCacheValue}. The main
     * purpose of this is to provide a representation that does <i>not</i> have a reference to the key. This is useful in
     * situations where the key is already known or stored elsewhere, making serialization and deserialization more
     * efficient.
@@ -92,5 +93,7 @@ public interface OffHeapInternalCacheEntry extends OffHeapCacheEntry, InternalCa
     */
    OffHeapInternalCacheValue toInternalCacheValue();
 
-   OffHeapInternalCacheEntry clone();
+    OffHeapMetadata getMetadata();
+
+    OffHeapInternalCacheEntry clone();
 }

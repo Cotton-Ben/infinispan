@@ -9,11 +9,13 @@ import org.infinispan.commons.util.concurrent.ParallelIterableMap;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.eviction.*;
 import org.infinispan.factories.annotations.Inject;
-import org.infinispan.offheap.OffHeapCacheImpl;
 import org.infinispan.offheap.container.entries.OffHeapInternalCacheEntry;
+import org.infinispan.offheap.metadata.OffHeapMetadata;
+import org.infinispan.offheap.util.concurrent.OffHeapParallelIterableMap;
 import org.infinispan.persistence.manager.PersistenceManager;
 import org.infinispan.persistence.spi.AdvancedCacheLoader;
-import org.infinispan.offheap.util.CoreImmutables;
+import org.infinispan.offheap.util.OffHeapCoreImmutables;
+import org.infinispan.util.CoreImmutables;
 import org.infinispan.util.TimeService;
 import org.infinispan.util.concurrent.BoundedConcurrentHashMap;
 import org.infinispan.util.concurrent.BoundedConcurrentHashMap.Eviction;
@@ -23,14 +25,14 @@ import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * OffHeap DefaultDataContainer is both eviction and non-eviction based data container.
+ * OffHeap OffHeapDefaultDataContainer is both eviction and non-eviction based data container.
  *
  * @author ben.cotton@jpmorgan.com
  * @author dmitry.gordeev@jpmorgan.com
  * @author peter.lawrey@higherfrequencytrading.com
  */
 @ThreadSafe
-public class OffHeapDefaultDataContainer<T> implements OffHeapDataContainer {
+public class OffHeapDefaultDataContainer implements OffHeapDataContainer {
 
    private static final Log log = LogFactory.getLog(OffHeapDefaultDataContainer.class);
    private static final boolean trace = log.isTraceEnabled();
@@ -130,10 +132,7 @@ public class OffHeapDefaultDataContainer<T> implements OffHeapDataContainer {
       return entries.get(key);
    }
 
-    @Override
-    public void put(Object k, Object v, org.infinispan.metadata.Metadata metadata) {
 
-    }
 
     @Override
    public OffHeapInternalCacheEntry get(Object k) {
@@ -151,19 +150,19 @@ public class OffHeapDefaultDataContainer<T> implements OffHeapDataContainer {
    }
 
    @Override
-   public void put(Object k, Object v, org.infinispan.offheap.metadata.Metadata metadata) {
+   public void put(Object k, Object v, OffHeapMetadata metadata) {
       OffHeapInternalCacheEntry e = entries.get(k);
       if (e != null) {
          e.setValue(v);
          OffHeapInternalCacheEntry original = e;
-         e = entryFactory.update(e, (org.infinispan.metadata.Metadata) metadata);
+         e = entryFactory.update(e, metadata);
          // we have the same instance. So we need to reincarnate, if mortal.
          if (isMortalEntry(e) && original == e) {
             e.reincarnate(timeService.wallClockTime());
          }
       } else {
          // this is a brand-new entry
-         e = entryFactory.create(k, v, (org.infinispan.metadata.Metadata) metadata);
+         e = entryFactory.create(k, v,  metadata);
       }
 
       if (trace)
@@ -228,13 +227,6 @@ public class OffHeapDefaultDataContainer<T> implements OffHeapDataContainer {
       }
    }
 
-    @Override
-    public <K> void executeTask(
-            AdvancedCacheLoader.KeyFilter<K> filter,
-            ParallelIterableMap.KeyValueAction<Object, OffHeapInternalCacheEntry> action
-    ) throws InterruptedException {
-
-    }
 
 
    @Override
@@ -274,7 +266,7 @@ public class OffHeapDefaultDataContainer<T> implements OffHeapDataContainer {
 
       @Override
       public OffHeapInternalCacheEntry next() {
-         return CoreImmutables.immutableInternalCacheEntry(super.next());
+         return OffHeapCoreImmutables.immutableInternalCacheEntry(super.next());
    }
    }
 
@@ -377,20 +369,32 @@ public class OffHeapDefaultDataContainer<T> implements OffHeapDataContainer {
    }
 
    @Override
-   public <K> void executeTask(final AdvancedCacheLoader.KeyFilter<K> filter, final ParallelIterableMap.KeyValueAction<Object, InternalCacheEntry> action) throws InterruptedException{
+   public <K> void executeTask(
+           final AdvancedCacheLoader.KeyFilter<K> filter,
+           final ParallelIterableMap.KeyValueAction<Object, OffHeapInternalCacheEntry> action
+   ) throws InterruptedException{
       if (filter == null)
          throw new IllegalArgumentException("No filter specified");
       if (action == null)
          throw new IllegalArgumentException("No action specified");
 
-      ParallelIterableMap<Object, InternalCacheEntry> map = (ParallelIterableMap<Object, InternalCacheEntry>) entries;
-      map.forEach(512, new ParallelIterableMap.KeyValueAction<Object, InternalCacheEntry>() {
-         @Override
-         public void apply(Object key, InternalCacheEntry value) {
-            if (filter.shouldLoadKey((K)key)) {
-               action.apply((K)key, value);
-            }
-         }
+      OffHeapParallelIterableMap<Object, OffHeapInternalCacheEntry> map =
+              (OffHeapParallelIterableMap<Object, OffHeapInternalCacheEntry>) entries;
+
+       map.forEach(512, new OffHeapParallelIterableMap.KeyValueAction<Object, OffHeapInternalCacheEntry>() {
+
+           @Override
+           public void apply(Object o, OffHeapInternalCacheEntry internalCacheEntry) {
+
+           }
+
+
+//         @Override
+//         public void apply(Object key, OffHeapInternalCacheEntry value) {
+//            if (filter.shouldLoadKey((K)key)) {
+//               action.apply((K)key, value);
+//            }
+//         }
       });
       //TODO figure out the way how to do interruption better (during iteration)
       if(Thread.currentThread().isInterrupted()){

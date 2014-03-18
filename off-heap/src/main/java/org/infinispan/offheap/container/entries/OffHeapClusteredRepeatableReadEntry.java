@@ -4,10 +4,12 @@ import org.infinispan.container.DataContainer;
 import org.infinispan.container.versioning.EntryVersion;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.metadata.Metadata;
+import org.infinispan.offheap.container.OffHeapDataContainer;
 import org.infinispan.offheap.container.entries.versioned.OffHeapVersioned;
 import org.infinispan.offheap.container.versioning.OffHeapEntryVersion;
 import org.infinispan.offheap.container.versioning.InequalVersionComparisonResult;
-import org.infinispan.offheap.container.versioning.VersionGenerator;
+import org.infinispan.offheap.container.versioning.OffHeapVersionGenerator;
+import org.infinispan.offheap.metadata.OffHeapMetadata;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
@@ -22,7 +24,7 @@ public class OffHeapClusteredRepeatableReadEntry extends OffHeapRepeatableReadEn
 
    private static final Log log = LogFactory.getLog(OffHeapClusteredRepeatableReadEntry.class);
 
-   public OffHeapClusteredRepeatableReadEntry(Object key, Object value, Metadata metadata) {
+   public OffHeapClusteredRepeatableReadEntry(Object key, Object value, OffHeapMetadata metadata) {
       super(key, value, metadata);
    }
 
@@ -30,7 +32,7 @@ public class OffHeapClusteredRepeatableReadEntry extends OffHeapRepeatableReadEn
                                 OffHeapDataContainer container,
                                 TxInvocationContext ctx,
                                 OffHeapEntryVersion versionSeen,
-                                VersionGenerator versionGenerator) {
+                                OffHeapVersionGenerator versionGenerator) {
       if (versionSeen == null) {
          if (log.isTraceEnabled()) {
             log.tracef("Perform write skew check for key %s but the key was not read. Skipping check!", key);
@@ -85,7 +87,7 @@ public class OffHeapClusteredRepeatableReadEntry extends OffHeapRepeatableReadEn
 
     @Override
    public void setVersion(OffHeapEntryVersion version) {
-      metadata = metadata.builder().version((EntryVersion) version).build();
+      metadata = metadata.builder().version((OffHeapEntryVersion) version).build();
    }
 
     @Override
@@ -97,4 +99,9 @@ public class OffHeapClusteredRepeatableReadEntry extends OffHeapRepeatableReadEn
    public boolean isNull() {
       return value == null;
    }
+
+    @Override
+    public void setMetadata(Metadata metadata) {
+
+    }
 }

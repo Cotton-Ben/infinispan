@@ -16,7 +16,7 @@ public interface OffHeapVersionGenerator {
     */
    OffHeapIncrementableEntryVersion generateNew();
 
-   OffHeapIncrementableEntryVersion increment(IncrementableEntryVersion initialVersion);
+   OffHeapIncrementableEntryVersion increment(OffHeapIncrementableEntryVersion initialVersion);
 
    OffHeapIncrementableEntryVersion nonExistingVersion();
 }

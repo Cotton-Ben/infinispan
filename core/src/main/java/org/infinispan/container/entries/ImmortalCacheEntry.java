@@ -89,7 +89,7 @@ public class ImmortalCacheEntry extends AbstractInternalCacheEntry {
    }
 
    @Override
-   public OffHeapInternalCacheValue toInternalCacheValue() {
+   public InternalCacheValue toInternalCacheValue() {
       return new ImmortalCacheValue(value);
    }
 

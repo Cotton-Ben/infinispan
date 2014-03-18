@@ -2,7 +2,9 @@ package org.infinispan.offheap.container.entries;
 
 import org.infinispan.metadata.Metadata;
 import org.infinispan.offheap.container.OffHeapDataContainer;
-import org.infinispan.offheap.container.entries.metadata.MetadataAware;
+import org.infinispan.offheap.container.entries.metadata.OffHeapMetadataAware;
+import org.infinispan.offheap.metadata.OffHeapMetadata;
+
 
 import java.util.Map;
 
@@ -16,7 +18,7 @@ import java.util.Map;
  * @author dmitry.gordeev@jpmorgan.com
  * @author peter.lawrey@higherfrequencytrading.com
  */
-public interface OffHeapCacheEntry extends Map.Entry<Object, Object>, MetadataAware {
+public interface OffHeapCacheEntry extends Map.Entry<Object, Object>, OffHeapMetadataAware {
 
    /**
     * Tests whether the entry represents a null value, typically used for repeatable read.
@@ -100,8 +102,9 @@ public interface OffHeapCacheEntry extends Map.Entry<Object, Object>, MetadataAw
     * Commits changes
     *
     * @param container data container to commit to
+    * @param metadata
     */
-   void commit(OffHeapDataContainer container, Metadata metadata);
+   void commit(OffHeapDataContainer container, OffHeapMetadata metadata);
 
    /**
     * Rolls back changes
@@ -127,8 +130,10 @@ public interface OffHeapCacheEntry extends Map.Entry<Object, Object>, MetadataAw
    void setSkipLookup(boolean skipLookup);
 
    /**
-    * If the entry is marked as removed and doUndelete==true then the "valid" flag is set to true and "removed"
+    * If the entry is marked as removed and doUnde OffHeapMetadata getOffHeapMetadata();lete==true then the "valid" flag is set to true and "removed"
     * flag is set to false.
     */
    boolean undelete(boolean doUndelete);
+
+    
 }

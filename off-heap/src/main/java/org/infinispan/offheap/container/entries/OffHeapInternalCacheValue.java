@@ -1,6 +1,7 @@
 package org.infinispan.offheap.container.entries;
 
 import org.infinispan.metadata.Metadata;
+import org.infinispan.offheap.metadata.OffHeapMetadata;
 
 /**
  * A representation of an OffHeapInternalCacheEntry that does not have a reference to the key.
@@ -69,5 +70,5 @@ public interface OffHeapInternalCacheValue {
 
    public long getExpiryTime();
 
-   Metadata getMetadata();
+   OffHeapMetadata getMetadata();
 }

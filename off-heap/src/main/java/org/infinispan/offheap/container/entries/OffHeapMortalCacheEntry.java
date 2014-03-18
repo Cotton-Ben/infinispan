@@ -1,17 +1,21 @@
-package org.infinispan.container.entries;
+package org.infinispan.offheap.container.entries;
 
-import org.infinispan.metadata.EmbeddedMetadata;
-import org.infinispan.metadata.Metadata;
+import net.openhft.lang.io.Bytes;
+import net.openhft.lang.io.serialization.BytesMarshallable;
 import org.infinispan.commons.io.UnsignedNumeric;
 import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.util.Util;
 import org.infinispan.marshall.core.Ids;
+import org.infinispan.metadata.EmbeddedMetadata;
+import org.infinispan.metadata.Metadata;
+import org.infinispan.offheap.metadata.OffHeapEmbeddedMetadata;
+import org.infinispan.offheap.metadata.OffHeapMetadata;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Set;
-
 
 import static org.infinispan.commons.util.Util.toStr;
 
@@ -24,13 +28,15 @@ import static org.infinispan.commons.util.Util.toStr;
  * @author ben.cotton@jpmorgan.com  (OffHeap OpenHFT integration)
  *
  */
-public class MortalCacheEntry extends AbstractInternalCacheEntry {
+public class OffHeapMortalCacheEntry
+                                    extends OffHeapAbstractInternalCacheEntry
+                                    implements BytesMarshallable {
 
    protected Object value;
    protected long lifespan = -1;
    protected long created;
 
-   public MortalCacheEntry(Object key, Object value, long lifespan, long created) {
+   public OffHeapMortalCacheEntry(Object key, Object value, long lifespan, long created) {
       super(key);
       this.value = value;
       this.lifespan = lifespan;
@@ -49,7 +55,7 @@ public class MortalCacheEntry extends AbstractInternalCacheEntry {
 
    @Override
    public final boolean isExpired(long now) {
-      return ExpiryHelper.isExpiredMortal(lifespan, created, now);
+      return OffHeapExpiryHelper.isExpiredMortal(lifespan, created, now);
    }
 
    @Override
@@ -112,17 +118,17 @@ public class MortalCacheEntry extends AbstractInternalCacheEntry {
    }
 
    @Override
-   public InternalCacheValue toInternalCacheValue() {
-      return new MortalCacheValue(value, created, lifespan);
+   public OffHeapInternalCacheValue toInternalCacheValue() {
+      return new OffHeapMortalCacheValue(value, created, lifespan);
    }
 
    @Override
-   public Metadata getMetadata() {
-      return new EmbeddedMetadata.Builder().lifespan(lifespan).build();
+   public OffHeapMetadata getMetadata() {
+      return new OffHeapEmbeddedMetadata.OffHeapBuilder().lifespan(lifespan).build();
    }
 
    @Override
-   public void setMetadata(Metadata metadata) {
+   public void setMetadata(OffHeapMetadata metadata) {
       throw new IllegalStateException(
             "Metadata cannot be set on mortal entries. They need to be recreated via the entry factory.");
    }
@@ -132,7 +138,7 @@ public class MortalCacheEntry extends AbstractInternalCacheEntry {
       if (this == o) return true;
       if (o == null || getClass() != o.getClass()) return false;
 
-      MortalCacheEntry that = (MortalCacheEntry) o;
+     OffHeapMortalCacheEntry that = (OffHeapMortalCacheEntry) o;
 
       if (key != null ? !key.equals(that.key) : that.key != null) return false;
       if (value != null ? !value.equals(that.value) : that.value != null)
@@ -151,13 +157,23 @@ public class MortalCacheEntry extends AbstractInternalCacheEntry {
    }
 
    @Override
-   public InternalCacheEntry clone() {
-      return (MortalCacheEntry) super.clone();
+   public OffHeapMortalCacheEntry clone() {
+      return (OffHeapMortalCacheEntry) super.clone();
    }
 
-   public static class Externalizer extends AbstractExternalizer<MortalCacheEntry> {
+    @Override
+    public void readMarshallable(@NotNull Bytes bytes) throws IllegalStateException {
+
+    }
+
+    @Override
+    public void writeMarshallable(@NotNull Bytes bytes) {
+
+    }
+
+    public static class Externalizer extends AbstractExternalizer<OffHeapMortalCacheEntry> {
       @Override
-      public void writeObject(ObjectOutput output, MortalCacheEntry mce) throws IOException {
+      public void writeObject(ObjectOutput output, OffHeapMortalCacheEntry mce) throws IOException {
          output.writeObject(mce.key);
          output.writeObject(mce.value);
          UnsignedNumeric.writeUnsignedLong(output, mce.created);
@@ -165,12 +181,12 @@ public class MortalCacheEntry extends AbstractInternalCacheEntry {
       }
 
       @Override
-      public MortalCacheEntry readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+      public OffHeapMortalCacheEntry readObject(ObjectInput input) throws IOException, ClassNotFoundException {
          Object k = input.readObject();
          Object v = input.readObject();
          long created = UnsignedNumeric.readUnsignedLong(input);
          Long lifespan = input.readLong();
-         return new MortalCacheEntry(k, v, lifespan, created);
+         return new OffHeapMortalCacheEntry(k, v, lifespan, created);
       }
 
       @Override
@@ -179,8 +195,8 @@ public class MortalCacheEntry extends AbstractInternalCacheEntry {
       }
 
       @Override
-      public Set<Class<? extends MortalCacheEntry>> getTypeClasses() {
-         return Util.<Class<? extends MortalCacheEntry>>asSet(MortalCacheEntry.class);
+      public Set<Class<? extends OffHeapMortalCacheEntry>> getTypeClasses() {
+         return Util.<Class<? extends OffHeapMortalCacheEntry>>asSet(OffHeapMortalCacheEntry.class);
       }
    }
 

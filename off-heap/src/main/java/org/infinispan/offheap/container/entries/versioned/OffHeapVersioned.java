@@ -7,6 +7,11 @@ import org.infinispan.offheap.container.versioning.OffHeapEntryVersion;
  *
  * @author Manik Surtani
  * @since 5.1
+ *
+ * @author ben.cotton@jpmorgan.com
+ * @author dmitry.gordeev@jpmorgan.com
+ * @author peter.lawrey@higherfrequencytrading.com
+ *
  */
 public interface OffHeapVersioned {
 

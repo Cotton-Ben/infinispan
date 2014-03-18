@@ -1,12 +1,11 @@
 package org.infinispan.offheap;
 
 import net.openhft.lang.model.constraints.MaxSize;
-import org.infinispan.container.DataContainer;
-import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.offheap.container.OffHeapDataContainer;
 import org.infinispan.offheap.container.entries.OffHeapInternalCacheEntry;
 import org.infinispan.offheap.container.entries.OffHeapInternalCacheValue;
+import org.infinispan.offheap.metadata.OffHeapMetadata;
 
 /**
  *
@@ -119,7 +118,7 @@ interface BondVOInterface extends OffHeapInternalCacheEntry {
     int hashCode();
 
     @Override
-    void commit(OffHeapDataContainer container, Metadata metadata);
+    void commit(OffHeapDataContainer container, OffHeapMetadata metadata);
 
     @Override
     void rollback();

@@ -8,6 +8,8 @@ import org.infinispan.container.entries.InternalCacheValue;
 import org.infinispan.marshall.core.Ids;
 import org.infinispan.metadata.EmbeddedMetadata;
 import org.infinispan.metadata.Metadata;
+import org.infinispan.offheap.metadata.OffHeapEmbeddedMetadata;
+import org.infinispan.offheap.metadata.OffHeapMetadata;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -21,8 +23,13 @@ import static org.infinispan.commons.util.Util.toStr;
  *
  * @author Manik Surtani
  * @since 4.0
+ *
+ * @author ben.cotton@jpmorgan.com
+ * @author dmitry.gordeev@jpmorgan.com
+ * @author peter.lawrey@higherfrequencytrading.com
+ *
  */
-public class OffHeapImmortalCacheEntry extends AbstractInternalCacheEntry {
+public class OffHeapImmortalCacheEntry extends OffHeapAbstractInternalCacheEntry {
 
    public Object value;
 
@@ -92,8 +99,8 @@ public class OffHeapImmortalCacheEntry extends AbstractInternalCacheEntry {
    }
 
    @Override
-   public InternalCacheValue toInternalCacheValue() {
-      return new ImmortalCacheValue(value);
+   public OffHeapInternalCacheValue toInternalCacheValue() {
+      return new OffHeapImmortalCacheValue(value);
    }
 
    @Override
@@ -107,12 +114,12 @@ public class OffHeapImmortalCacheEntry extends AbstractInternalCacheEntry {
    }
 
    @Override
-   public Metadata getMetadata() {
-      return new EmbeddedMetadata.Builder().build();
+   public OffHeapMetadata getMetadata() {
+      return new OffHeapEmbeddedMetadata.OffHeapBuilder().build();
    }
 
    @Override
-   public void setMetadata(Metadata metadata) {
+   public void setMetadata(OffHeapMetadata metadata) {
       throw new IllegalStateException(
             "Metadata cannot be set on immortal entries. They need to be recreated via the entry factory.");
    }

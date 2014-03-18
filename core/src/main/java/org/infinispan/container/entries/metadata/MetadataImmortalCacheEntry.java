@@ -3,6 +3,7 @@ package org.infinispan.container.entries.metadata;
 import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.util.Util;
 import org.infinispan.container.entries.ImmortalCacheEntry;
+import org.infinispan.container.entries.InternalCacheValue;
 import org.infinispan.marshall.core.Ids;
 import org.infinispan.metadata.Metadata;
 
@@ -40,7 +41,7 @@ public class MetadataImmortalCacheEntry extends ImmortalCacheEntry implements Me
    }
 
    @Override
-   public OffHeapInternalCacheValue toInternalCacheValue() {
+   public InternalCacheValue toInternalCacheValue() {
       return new MetadataImmortalCacheValue(value, metadata);
    }
 

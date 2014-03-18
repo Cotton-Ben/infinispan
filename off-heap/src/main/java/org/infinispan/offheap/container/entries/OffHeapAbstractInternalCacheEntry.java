@@ -1,7 +1,7 @@
 package org.infinispan.offheap.container.entries;
 
-import org.infinispan.metadata.Metadata;
 import org.infinispan.offheap.container.OffHeapDataContainer;
+import org.infinispan.offheap.metadata.OffHeapMetadata;
 
 /**
  * An abstract internal cache entry that is typically stored in the data container
@@ -22,7 +22,7 @@ public abstract class OffHeapAbstractInternalCacheEntry implements OffHeapIntern
    }
 
    @Override
-   public final void commit(OffHeapDataContainer container, Metadata metadata) {
+   public final void commit(OffHeapDataContainer container, OffHeapMetadata metadata) {
       // no-op
    }
 
@@ -112,12 +112,12 @@ public abstract class OffHeapAbstractInternalCacheEntry implements OffHeapIntern
    }
 
    @Override
-   public Metadata getMetadata() {
+   public OffHeapMetadata getMetadata() {
       return null;
    }
 
    @Override
-   public void setMetadata(Metadata metadata) {
+   public void setMetadata(OffHeapMetadata metadata) {
       // no-op
    }
 

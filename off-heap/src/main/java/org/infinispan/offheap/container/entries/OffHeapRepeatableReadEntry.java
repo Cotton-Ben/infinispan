@@ -5,6 +5,7 @@ import org.infinispan.metadata.Metadata;
 import org.infinispan.offheap.container.OffHeapDataContainer;
 import org.infinispan.offheap.container.OffHeapDataContainer;
 import org.infinispan.offheap.container.versioning.OffHeapEntryVersion;
+import org.infinispan.offheap.metadata.OffHeapMetadata;
 import org.infinispan.transaction.WriteSkewException;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
@@ -24,7 +25,7 @@ import static org.infinispan.offheap.container.entries.OffHeapReadCommittedEntry
 public abstract class OffHeapRepeatableReadEntry extends OffHeapReadCommittedEntry {
    private static final Log log = LogFactory.getLog(OffHeapRepeatableReadEntry.class);
 
-   public OffHeapRepeatableReadEntry(Object key, Object value, Metadata metadata) {
+   public OffHeapRepeatableReadEntry(Object key, Object value, OffHeapMetadata metadata) {
       super(key, value, metadata);
    }
 
