@@ -7,7 +7,8 @@ import org.infinispan.metadata.Metadata;
 import org.infinispan.offheap.container.OffHeapDataContainer;
 import org.infinispan.offheap.container.entries.versioned.OffHeapVersioned;
 import org.infinispan.offheap.container.versioning.OffHeapEntryVersion;
-import org.infinispan.offheap.container.versioning.InequalVersionComparisonResult;
+import org.infinispan.offheap.container.versioning.OffHeapInequalVersionComparisonResult;
+import org.infinispan.offheap.container.versioning.OffHeapInequalVersionComparisonResult;
 import org.infinispan.offheap.container.versioning.OffHeapVersionGenerator;
 import org.infinispan.offheap.metadata.OffHeapMetadata;
 import org.infinispan.util.logging.Log;
@@ -52,7 +53,7 @@ public class OffHeapClusteredRepeatableReadEntry extends OffHeapRepeatableReadEn
                log.tracef("No looked up remote version for key %s found in context" , key);
             }
             //in this case, the key does not exist. So, the only result possible is the version seen be the NonExistingVersion
-             if (versionGenerator.nonExistingVersion().compareTo(versionSeen) == InequalVersionComparisonResult.EQUAL)
+             if (versionGenerator.nonExistingVersion().compareTo(versionSeen) == OffHeapInequalVersionComparisonResult.EQUAL)
                  return true;
              else return false;
          }
@@ -67,11 +68,11 @@ public class OffHeapClusteredRepeatableReadEntry extends OffHeapRepeatableReadEn
 
       //in this case, the transaction read some value and the data container has a value stored.
       //version seen and previous version are not null. Simple version comparation.
-      InequalVersionComparisonResult result = prevVersion.compareTo(versionSeen);
+      OffHeapInequalVersionComparisonResult result = prevVersion.compareTo(versionSeen);
       if (log.isTraceEnabled()) {
          log.tracef("Comparing versions %s and %s for key %s: %s", prevVersion, versionSeen, key, result);
       }
-      return InequalVersionComparisonResult.AFTER != result;
+      return OffHeapInequalVersionComparisonResult.AFTER != result;
    }
 
    // This entry is only used when versioning is enabled, and in these
@@ -100,8 +101,5 @@ public class OffHeapClusteredRepeatableReadEntry extends OffHeapRepeatableReadEn
       return value == null;
    }
 
-    @Override
-    public void setMetadata(Metadata metadata) {
 
-    }
 }

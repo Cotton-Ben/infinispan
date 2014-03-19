@@ -13,8 +13,9 @@ public interface OffHeapEntryVersion {
 
    /**
     * Compares the given version against the current instance.
+    *
     * @param other the other version to compare against
     * @return a InequalVersionComparisonResult instance
     */
-   InequalVersionComparisonResult compareTo(OffHeapEntryVersion other);
+   OffHeapInequalVersionComparisonResult compareTo(OffHeapEntryVersion other);
 }

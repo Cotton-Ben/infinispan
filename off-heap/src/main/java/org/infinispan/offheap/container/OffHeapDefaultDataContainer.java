@@ -1,6 +1,7 @@
 package org.infinispan.offheap.container;
 
 import net.jcip.annotations.ThreadSafe;
+import net.openhft.collections.SharedHashMapBuilder;
 import org.infinispan.commons.equivalence.Equivalence;
 import org.infinispan.commons.logging.Log;
 import org.infinispan.commons.logging.LogFactory;
@@ -9,6 +10,7 @@ import org.infinispan.commons.util.concurrent.ParallelIterableMap;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.eviction.*;
 import org.infinispan.factories.annotations.Inject;
+import org.infinispan.offheap.BondVOInterface;
 import org.infinispan.offheap.container.entries.OffHeapInternalCacheEntry;
 import org.infinispan.offheap.metadata.OffHeapMetadata;
 import org.infinispan.offheap.util.concurrent.OffHeapParallelIterableMap;
@@ -21,6 +23,7 @@ import org.infinispan.util.concurrent.BoundedConcurrentHashMap;
 import org.infinispan.util.concurrent.BoundedConcurrentHashMap.Eviction;
 import org.infinispan.util.concurrent.BoundedConcurrentHashMap.EvictionListener;
 
+import java.io.File;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 
@@ -37,97 +40,79 @@ public class OffHeapDefaultDataContainer implements OffHeapDataContainer {
    private static final Log log = LogFactory.getLog(OffHeapDefaultDataContainer.class);
    private static final boolean trace = log.isTraceEnabled();
 
-   final protected ConcurrentMap<Object, OffHeapInternalCacheEntry> entries;
+   protected ConcurrentMap<Object, OffHeapInternalCacheEntry> entries;
    protected OffHeapInternalEntryFactory entryFactory;
-   final protected DefaultEvictionListener evictionListener;
+   protected DefaultEvictionListener evictionListener;
    private EvictionManager evictionManager;
    private PassivationManager passivator;
    private ActivationManager activator;
    private PersistenceManager pm;
    private TimeService timeService;
 
-   public OffHeapDefaultDataContainer(int concurrencyLevel) {
-      // If no comparing implementations passed, could fallback on JDK CHM
-      entries = CollectionFactory.makeConcurrentParallelMap(128, concurrencyLevel);
-      evictionListener = null;
-   }
+   public OffHeapDefaultDataContainer(
+           Class<String> stringClass,
+           Class<BondVOInterface> bondVOInterfaceClass,
+           String bondVOOperand,
+           int entrysSize,
+           int segmentsSize) {
+       try {
+           ConcurrentMap<String, BondVOInterface> entries = new SharedHashMapBuilder()
+                   .generatedValueType(Boolean.TRUE)
+                   .entrySize(entrysSize)
+                   .minSegments(segmentsSize)
+                   .create(
+                           new File("/dev/shm/" + bondVOOperand),
+                           String.class,
+                           BondVOInterface.class
+                   );
+       } catch (Exception e) {
+           e.printStackTrace();
+       }
 
-   public OffHeapDefaultDataContainer(int concurrencyLevel,
-         Equivalence keyEq, Equivalence valueEq) {
-      // If at least one comparing implementation give, use ComparingCHMv8
-      entries = CollectionFactory.makeConcurrentParallelMap(128, concurrencyLevel, keyEq, valueEq);
-      evictionListener = null;
-   }
-
-   public OffHeapDefaultDataContainer(int concurrencyLevel, int maxEntries,
-                               EvictionStrategy strategy, EvictionThreadPolicy policy,
-                               Equivalence keyEquivalence, Equivalence valueEquivalence) {
-      // translate eviction policy and strategy
-      switch (policy) {
-         case PIGGYBACK:
-         case DEFAULT:
-            evictionListener = new DefaultEvictionListener();
-            break;
-         default:
-            throw new IllegalArgumentException("No such eviction thread policy " + strategy);
+        //entries = CollectionFactory.makeConcurrentParallelMap(128, concurrencyLevel);
+        evictionListener = null;
       }
 
-      Eviction eviction;
-      switch (strategy) {
-         case FIFO:
-         case UNORDERED:
-         case LRU:
-            eviction = Eviction.LRU;
-            break;
-         case LIRS:
-            eviction = Eviction.LIRS;
-            break;
-         default:
-            throw new IllegalArgumentException("No such eviction strategy " + strategy);
-      }
 
-      entries = new BoundedConcurrentHashMap<Object, OffHeapInternalCacheEntry>(
-                            maxEntries,
-                            concurrencyLevel,
-                            eviction,
-                            /*evictionListener*/null,
-                            keyEquivalence,
-                            valueEquivalence);
-   }
 
-   @Inject
-   public void initialize(
-                EvictionManager evictionManager,
-                PassivationManager passivator,
-                OffHeapInternalEntryFactory entryFactory,
-                ActivationManager activator,
-                PersistenceManager clm,
-                TimeService timeService) {
-      this.evictionManager = evictionManager;
-      this.passivator = passivator;
-      this.entryFactory = entryFactory;
-      this.activator = activator;
-      this.pm = clm;
-      this.timeService = timeService;
-   }
 
-   public static OffHeapDataContainer boundedDataContainer(int concurrencyLevel, int maxEntries,
-            EvictionStrategy strategy, EvictionThreadPolicy policy,
-            Equivalence keyEquivalence, Equivalence valueEquivalence) {
-      return new OffHeapDefaultDataContainer(concurrencyLevel, maxEntries, strategy,
-            policy, keyEquivalence, valueEquivalence);
-   }
 
-   public static OffHeapDataContainer unBoundedDataContainer(int concurrencyLevel,
-         Equivalence keyEquivalence, Equivalence valueEquivalence) {
-      return new OffHeapDefaultDataContainer(concurrencyLevel, keyEquivalence, valueEquivalence);
-   }
+//    public OffHeapDefaultDataContainer(int concurrencyLevel) {
+//    }
+//
+//   @Inject
+//   public void initialize(
+//                EvictionManager evictionManager,
+//                PassivationManager passivator,
+//                OffHeapInternalEntryFactory entryFactory,
+//                ActivationManager activator,
+//                PersistenceManager clm,
+//                TimeService timeService) {
+//      this.evictionManager = evictionManager;
+//      this.passivator = passivator;
+//      this.entryFactory = entryFactory;
+//      this.activator = activator;
+//      this.pm = clm;
+//      this.timeService = timeService;
+//   }
 
-   public static OffHeapDataContainer unBoundedDataContainer(int concurrencyLevel) {
-      return new OffHeapDefaultDataContainer(concurrencyLevel);
-   }
+//   public static OffHeapDataContainer boundedDataContainer(int concurrencyLevel, int maxEntries,
+//            EvictionStrategy strategy, EvictionThreadPolicy policy,
+//            Equivalence keyEquivalence, Equivalence valueEquivalence) {
+//      return new OffHeapDefaultDataContainer(concurrencyLevel, maxEntries, strategy,
+//            policy, keyEquivalence, valueEquivalence);
+//   }
+//
+//   public static OffHeapDataContainer unBoundedDataContainer(int concurrencyLevel,
+//         Equivalence keyEquivalence, Equivalence valueEquivalence) {
+//      return new OffHeapDefaultDataContainer(concurrencyLevel, keyEquivalence, valueEquivalence);
+//   }
 
-   @Override
+//   public static OffHeapDataContainer unBoundedDataContainer(int concurrencyLevel) {
+//      return new OffHeapDefaultDataContainer(concurrencyLevel);
+//   }
+
+   //@Override
    public OffHeapInternalCacheEntry peek(Object key) {
       return entries.get(key);
    }
@@ -401,4 +386,9 @@ public class OffHeapDefaultDataContainer implements OffHeapDataContainer {
          throw new InterruptedException();
       }
    }
+
+    @Override
+    public void initialize(Object o, Object o1, OffHeapInternalEntryFactoryImpl internalEntryFactory, Object o2, Object o3, TimeService timeService) {
+
+    }
 }

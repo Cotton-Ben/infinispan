@@ -11,4 +11,5 @@ package org.infinispan.commands;
  */
 public interface FlagAffectedCommand extends VisitableCommand, TopologyAffectedCommand, MetadataAwareCommand,
                                              LocalFlagAffectedCommand {
+
 }

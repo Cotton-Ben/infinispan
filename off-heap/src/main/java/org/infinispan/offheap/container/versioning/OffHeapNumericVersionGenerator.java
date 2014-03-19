@@ -1,6 +1,8 @@
 package org.infinispan.offheap.container.versioning;
 
 import org.infinispan.Cache;
+import org.infinispan.container.versioning.IncrementableEntryVersion;
+import org.infinispan.container.versioning.VersionGenerator;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
 import org.infinispan.notifications.Listener;
@@ -29,14 +31,14 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author Galder Zamarreño
  * @since 5.3
  */
-public class NumericVersionGenerator implements VersionGenerator {
+public class OffHeapNumericVersionGenerator implements OffHeapVersionGenerator {
 
-   private static final Log log = LogFactory.getLog(NumericVersionGenerator.class);
+   private static final Log log = LogFactory.getLog(OffHeapNumericVersionGenerator.class);
 
    // TODO: Possibly seed version counter on capped System.currentTimeMillis, to avoid issues with clients holding to versions in between restarts
    final AtomicInteger versionCounter = new AtomicInteger();
    final AtomicLong versionPrefix = new AtomicLong();
-   private static final NumericVersion NON_EXISTING = new NumericVersion(0);
+   private static final OffHeapNumericVersion NON_EXISTING = new OffHeapNumericVersion(0);
 
    private Cache<?, ?> cache;
    private boolean isClustered;
@@ -59,29 +61,29 @@ public class NumericVersionGenerator implements VersionGenerator {
       }
    }
 
-   public NumericVersionGenerator clustered(boolean clustered) {
+   public OffHeapNumericVersionGenerator clustered(boolean clustered) {
       isClustered = clustered;
       return this;
    }
 
    @Override
-   public IncrementableEntryVersion generateNew() {
+   public OffHeapIncrementableEntryVersion generateNew() {
       long counter = versionCounter.incrementAndGet();
-      return createNumericVersion(counter);
+      return this.createNumericVersion(counter);
 
    }
 
-   private IncrementableEntryVersion createNumericVersion(long counter) {
+   private OffHeapIncrementableEntryVersion createNumericVersion(long counter) {
       // Version counter occupies the least significant 4 bytes of the version
       return isClustered
-            ? new NumericVersion(versionPrefix.get() | counter)
-            : new NumericVersion(counter);
+            ? new OffHeapNumericVersion(versionPrefix.get() | counter)
+            : new OffHeapNumericVersion(counter);
    }
 
    @Override
-   public IncrementableEntryVersion increment(IncrementableEntryVersion initialVersion) {
-      if (initialVersion instanceof NumericVersion) {
-         NumericVersion old = (NumericVersion) initialVersion;
+   public OffHeapIncrementableEntryVersion increment(OffHeapIncrementableEntryVersion initialVersion) {
+      if (initialVersion instanceof OffHeapNumericVersion) {
+         OffHeapNumericVersion old = (OffHeapNumericVersion) initialVersion;
          long counter = old.getVersion() + 1;
          return createNumericVersion(counter);
       }
@@ -90,7 +92,7 @@ public class NumericVersionGenerator implements VersionGenerator {
    }
 
    @Override
-   public IncrementableEntryVersion nonExistingVersion() {
+   public OffHeapIncrementableEntryVersion nonExistingVersion() {
       return NON_EXISTING;
    }
 
@@ -119,7 +121,7 @@ public class NumericVersionGenerator implements VersionGenerator {
       @ViewChanged
       @SuppressWarnings("unused")
       public void calculateRank(ViewChangedEvent e) {
-         long rank = NumericVersionGenerator.this
+         long rank = OffHeapNumericVersionGenerator.this
                .calculateRank(e.getLocalAddress(), e.getNewMembers(), e.getViewId());
          if (log.isTraceEnabled())
             log.tracef("Calculated rank based on view %s and result was %d", e, rank);

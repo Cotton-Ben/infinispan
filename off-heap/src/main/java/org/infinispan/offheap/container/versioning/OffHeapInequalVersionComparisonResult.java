@@ -8,7 +8,7 @@ package org.infinispan.offheap.container.versioning;
  * @author Manik Surtani
  * @since 5.1
  */
-public enum InequalVersionComparisonResult {
+public enum OffHeapInequalVersionComparisonResult {
    /**
     * Denotes a version that was created temporally <i>before</i> another version.
     */

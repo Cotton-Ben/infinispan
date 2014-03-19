@@ -17,7 +17,7 @@ import java.util.Set;
  * @since 5.1
  */
 @Immutable
-public class SimpleClusteredVersion implements IncrementableEntryVersion {
+public class OffHeapSimpleClusteredVersion implements OffHeapIncrementableEntryVersion {
 
    /**
     * The cache topology id in which it was first created.
@@ -26,27 +26,27 @@ public class SimpleClusteredVersion implements IncrementableEntryVersion {
 
    final long version;
 
-   public SimpleClusteredVersion(int topologyId, long version) {
+   public OffHeapSimpleClusteredVersion(int topologyId, long version) {
       this.version = version;
       this.topologyId = topologyId;
    }
 
    @Override
-   public InequalVersionComparisonResult compareTo(EntryVersion other) {
-      if (other instanceof SimpleClusteredVersion) {
-         SimpleClusteredVersion otherVersion = (SimpleClusteredVersion) other;
+   public OffHeapInequalVersionComparisonResult compareTo(OffHeapEntryVersion other) {
+      if (other instanceof OffHeapSimpleClusteredVersion) {
+         OffHeapSimpleClusteredVersion otherVersion = (OffHeapSimpleClusteredVersion) other;
 
          if (topologyId > otherVersion.topologyId)
-            return InequalVersionComparisonResult.AFTER;
+            return OffHeapInequalVersionComparisonResult.AFTER;
          if (topologyId < otherVersion.topologyId)
-            return InequalVersionComparisonResult.BEFORE;
+            return OffHeapInequalVersionComparisonResult.BEFORE;
 
          if (version > otherVersion.version)
-            return InequalVersionComparisonResult.AFTER;
+            return OffHeapInequalVersionComparisonResult.AFTER;
          if (version < otherVersion.version)
-            return InequalVersionComparisonResult.BEFORE;
+            return OffHeapInequalVersionComparisonResult.BEFORE;
 
-         return InequalVersionComparisonResult.EQUAL;
+         return OffHeapInequalVersionComparisonResult.EQUAL;
       } else {
          throw new IllegalArgumentException("I only know how to deal with SimpleClusteredVersions, not " + other.getClass().getName());
       }
@@ -60,20 +60,20 @@ public class SimpleClusteredVersion implements IncrementableEntryVersion {
             '}';
    }
 
-   public static class Externalizer extends AbstractExternalizer<SimpleClusteredVersion> {
+   public static class Externalizer extends AbstractExternalizer<OffHeapSimpleClusteredVersion> {
 
       @Override
-      public void writeObject(ObjectOutput output, SimpleClusteredVersion ch) throws IOException {
+      public void writeObject(ObjectOutput output, OffHeapSimpleClusteredVersion ch) throws IOException {
          output.writeInt(ch.topologyId);
          output.writeLong(ch.version);
       }
 
       @Override
       @SuppressWarnings("unchecked")
-      public SimpleClusteredVersion readObject(ObjectInput unmarshaller) throws IOException, ClassNotFoundException {
+      public OffHeapSimpleClusteredVersion readObject(ObjectInput unmarshaller) throws IOException, ClassNotFoundException {
          int topologyId = unmarshaller.readInt();
          long version = unmarshaller.readLong();
-         return new SimpleClusteredVersion(topologyId, version);
+         return new OffHeapSimpleClusteredVersion(topologyId, version);
       }
 
       @Override
@@ -82,8 +82,8 @@ public class SimpleClusteredVersion implements IncrementableEntryVersion {
       }
 
       @Override
-      public Set<Class<? extends SimpleClusteredVersion>> getTypeClasses() {
-         return Collections.<Class<? extends SimpleClusteredVersion>>singleton(SimpleClusteredVersion.class);
+      public Set<Class<? extends OffHeapSimpleClusteredVersion>> getTypeClasses() {
+         return Collections.<Class<? extends OffHeapSimpleClusteredVersion>>singleton(OffHeapSimpleClusteredVersion.class);
       }
    }
 }

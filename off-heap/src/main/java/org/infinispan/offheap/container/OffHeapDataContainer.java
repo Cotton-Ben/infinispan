@@ -9,6 +9,7 @@ import org.infinispan.metadata.Metadata;
 import org.infinispan.offheap.container.entries.OffHeapInternalCacheEntry;
 import org.infinispan.offheap.metadata.OffHeapMetadata;
 import org.infinispan.persistence.spi.AdvancedCacheLoader;
+import org.infinispan.util.TimeService;
 
 import java.util.Collection;
 import java.util.Set;
@@ -132,4 +133,6 @@ public interface OffHeapDataContainer extends Iterable<OffHeapInternalCacheEntry
             AdvancedCacheLoader.KeyFilter<K> filter,
             ParallelIterableMap.KeyValueAction<Object, OffHeapInternalCacheEntry> action
     ) throws InterruptedException;
+
+    void initialize(Object o, Object o1, OffHeapInternalEntryFactoryImpl internalEntryFactory, Object o2, Object o3, TimeService timeService);
 }

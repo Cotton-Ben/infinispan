@@ -15,11 +15,11 @@ import java.util.Set;
  * @author Galder Zamarreño
  * @since 5.3
  */
-public class NumericVersion implements IncrementableEntryVersion {
+public class OffHeapNumericVersion implements OffHeapIncrementableEntryVersion {
 
    private final long version;
 
-   public NumericVersion(long version) {
+   public OffHeapNumericVersion(long version) {
       this.version = version;
    }
 
@@ -28,19 +28,20 @@ public class NumericVersion implements IncrementableEntryVersion {
    }
 
    @Override
-   public InequalVersionComparisonResult compareTo(EntryVersion other) {
-      if (other instanceof NumericVersion) {
-         NumericVersion otherVersion = (NumericVersion) other;
+   public OffHeapInequalVersionComparisonResult compareTo(OffHeapEntryVersion other) {
+      if (other instanceof OffHeapNumericVersion) {
+         OffHeapNumericVersion otherVersion = (OffHeapNumericVersion) other;
          if (version < otherVersion.version)
-            return InequalVersionComparisonResult.BEFORE;
+            return OffHeapInequalVersionComparisonResult.BEFORE;
          else if (version > otherVersion.version)
-            return InequalVersionComparisonResult.AFTER;
+            return OffHeapInequalVersionComparisonResult.AFTER;
          else
-            return InequalVersionComparisonResult.EQUAL;
+            return OffHeapInequalVersionComparisonResult.EQUAL;
       }
 
       throw new IllegalArgumentException(
-            "Unable to compare other types: " + other.getClass().getName());
+            "Unable to compare other types: " + other.getClass().getName()
+      );
    }
 
    @Override
@@ -48,7 +49,7 @@ public class NumericVersion implements IncrementableEntryVersion {
       if (this == o) return true;
       if (o == null || getClass() != o.getClass()) return false;
 
-      NumericVersion that = (NumericVersion) o;
+      OffHeapNumericVersion that = (OffHeapNumericVersion) o;
 
       if (version != that.version) return false;
 
@@ -67,21 +68,21 @@ public class NumericVersion implements IncrementableEntryVersion {
             '}';
    }
 
-   public static class Externalizer extends AbstractExternalizer<NumericVersion> {
+   public static class OffHeapExternalizer extends AbstractExternalizer<OffHeapNumericVersion> {
 
       @Override
-      public Set<Class<? extends NumericVersion>> getTypeClasses() {
-         return Collections.<Class<? extends NumericVersion>>singleton(NumericVersion.class);
+      public Set<Class<? extends OffHeapNumericVersion>> getTypeClasses() {
+         return Collections.<Class<? extends OffHeapNumericVersion>>singleton(OffHeapNumericVersion.class);
       }
 
       @Override
-      public void writeObject(ObjectOutput output, NumericVersion object) throws IOException {
+      public void writeObject(ObjectOutput output, OffHeapNumericVersion object) throws IOException {
          output.writeLong(object.version);
       }
 
       @Override
-      public NumericVersion readObject(ObjectInput input) throws IOException {
-         return new NumericVersion(input.readLong());
+      public OffHeapNumericVersion readObject(ObjectInput input) throws IOException {
+         return new OffHeapNumericVersion(input.readLong());
       }
 
       @Override

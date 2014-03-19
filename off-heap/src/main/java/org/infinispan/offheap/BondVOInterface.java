@@ -10,7 +10,7 @@ import org.infinispan.offheap.metadata.OffHeapMetadata;
 /**
  *
  */
-interface BondVOInterface extends OffHeapInternalCacheEntry {
+public interface BondVOInterface extends OffHeapInternalCacheEntry {
 
     /* add support for entry based locking */
     void busyLockEntry() throws InterruptedException;
@@ -148,10 +148,10 @@ interface BondVOInterface extends OffHeapInternalCacheEntry {
     boolean undelete(boolean doUndelete);
 
     @Override
-    Metadata getMetadata();
+    OffHeapMetadata getMetadata();
 
     @Override
-    void setMetadata(Metadata metadata);
+    void setMetadata(OffHeapMetadata metadata);
 
     /* nested interface - empowering an Off-Heap hierarchical “TIER of prices”
     as array[ ] value */

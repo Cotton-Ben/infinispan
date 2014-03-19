@@ -13,14 +13,14 @@ import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
  * @author Manik Surtani
  * @since 5.1
  */
-public class SimpleClusteredVersionGenerator implements VersionGenerator {
+public class OffHeapSimpleClusteredVersionGenerator implements OffHeapVersionGenerator {
    // The current cache topology ID is recorded and used as a part of the version generated, and as such used as the
    // most significant part of a version comparison. If a version is generated based on an old cache topology and another is
    // generated based on a newer topology, the one based on the newer topology wins regardless of the version's counter.
    // See SimpleClusteredVersion for more details.
    private volatile int topologyId = -1;
 
-   private static final SimpleClusteredVersion NON_EXISTING = new SimpleClusteredVersion(0, 0);
+   private static final OffHeapSimpleClusteredVersion NON_EXISTING = new OffHeapSimpleClusteredVersion(0, 0);
 
    private Cache<?, ?> cache;
 
@@ -35,25 +35,25 @@ public class SimpleClusteredVersionGenerator implements VersionGenerator {
    }
 
    @Override
-   public IncrementableEntryVersion generateNew() {
+   public OffHeapIncrementableEntryVersion generateNew() {
       if (topologyId == -1) {
          throw new IllegalStateException("Topology id not set yet");
       }
-      return new SimpleClusteredVersion(topologyId, 1);
+      return new OffHeapSimpleClusteredVersion(topologyId, 1);
    }
 
    @Override
-   public IncrementableEntryVersion increment(IncrementableEntryVersion initialVersion) {
-      if (initialVersion instanceof SimpleClusteredVersion) {
-         SimpleClusteredVersion old = (SimpleClusteredVersion) initialVersion;
-         return new SimpleClusteredVersion(topologyId, old.version + 1);
+   public OffHeapIncrementableEntryVersion increment(OffHeapIncrementableEntryVersion initialVersion) {
+      if (initialVersion instanceof OffHeapSimpleClusteredVersion) {
+         OffHeapSimpleClusteredVersion old = (OffHeapSimpleClusteredVersion) initialVersion;
+         return new OffHeapSimpleClusteredVersion(topologyId, old.version + 1);
       } else {
          throw new IllegalArgumentException("I only know how to deal with SimpleClusteredVersions, not " + initialVersion.getClass().getName());
       }
    }
 
    @Override
-   public IncrementableEntryVersion nonExistingVersion() {
+   public OffHeapIncrementableEntryVersion nonExistingVersion() {
       return NON_EXISTING;
    }
 

@@ -1,6 +1,7 @@
 package org.infinispan.container.entries.metadata;
 
 import org.infinispan.container.entries.ExpiryHelper;
+import org.infinispan.container.entries.InternalCacheValue;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.container.entries.AbstractInternalCacheEntry;
 import org.infinispan.commons.io.UnsignedNumeric;
@@ -106,8 +107,8 @@ public class MetadataTransientCacheEntry extends AbstractInternalCacheEntry impl
    }
 
    @Override
-   public OffHeapInternalCacheValue toInternalCacheValue() {
-      return new OffHeapMetadataTransientCacheValue(value, metadata, lastUsed);
+   public InternalCacheValue toInternalCacheValue() {
+      return new MetadataTransientCacheValue(value, metadata, lastUsed);
    }
 
    @Override

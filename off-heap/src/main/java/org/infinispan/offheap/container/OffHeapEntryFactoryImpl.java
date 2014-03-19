@@ -14,8 +14,12 @@ import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.metadata.Metadatas;
-import org.infinispan.notifications.cachelistener.CacheNotifier;
+import org.infinispan.offheap.notifications.cachelistener.OffHeapCacheNotifier;
 import org.infinispan.offheap.container.entries.*;
+import org.infinispan.offheap.context.OffHeapInvocationContext;
+import org.infinispan.offheap.metadata.OffHeapMetadata;
+import org.infinispan.offheap.metadata.OffHeapMetadatas;
+import org.infinispan.offheap.notifications.cachelistener.OffHeapCacheNotifier;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
@@ -36,12 +40,15 @@ public class OffHeapEntryFactoryImpl implements OffHeapEntryFactory {
    protected boolean clusterModeWriteSkewCheck;
    private boolean isL1Enabled; //cache the value
    private Configuration configuration;
-   private CacheNotifier notifier;
+   private OffHeapCacheNotifier notifier;
    private DistributionManager distributionManager;//is null for non-clustered caches
 
    @Inject
-   public void injectDependencies(OffHeapDataContainer dataContainer, Configuration configuration, CacheNotifier notifier,
-                                  DistributionManager distributionManager) {
+   public void injectDependencies(
+                                    OffHeapDataContainer dataContainer,
+                                    Configuration configuration,
+                                    OffHeapCacheNotifier notifier,
+                                    DistributionManager distributionManager) {
       this.container = dataContainer;
       this.configuration = configuration;
       this.notifier = notifier;
@@ -57,11 +64,16 @@ public class OffHeapEntryFactoryImpl implements OffHeapEntryFactory {
       isL1Enabled = configuration.clustering().l1().enabled();
    }
 
-   @Override
-   public final OffHeapCacheEntry wrapEntryForReading(InvocationContext ctx, Object key) throws InterruptedException {
-      OffHeapCacheEntry cacheEntry = getFromContext(ctx, key);
+    @Override
+    public OffHeapCacheEntry wrapEntryForReading(InvocationContext ctx, Object key) throws InterruptedException {
+        return null;
+    }
+
+    @Override
+   public final OffHeapCacheEntry wrapEntryForReading(OffHeapInvocationContext ctx, Object key) throws InterruptedException {
+      OffHeapCacheEntry cacheEntry = this.offHeapGetFromContext(ctx, key);
       if (cacheEntry == null) {
-         cacheEntry = this.getFromContainer(key, false);
+         cacheEntry = this.offHeapGetFromContainer(key, false);
 
          // do not bother wrapping though if this is not in a tx.  repeatable read etc are all meaningless unless there is a tx.
          if (useRepeatableRead) {
@@ -75,13 +87,13 @@ public class OffHeapEntryFactoryImpl implements OffHeapEntryFactory {
                   mvccEntry.copyStateFlagsFrom((OffHeapStateChangingEntry) cacheEntry);
             }
 
-            if (mvccEntry != null) ctx.putLookedUpEntry(key, mvccEntry);
+            if (mvccEntry != null) ctx.offHeapPutLookedUpEntry(key, mvccEntry);
             if (trace) {
                log.tracef("Wrap %s for read. Entry=%s", key, mvccEntry);
             }
             return mvccEntry;
          } else if (cacheEntry != null) { // if not in transaction and repeatable read, or simply read committed (regardless of whether in TX or not), do not wrap
-            ctx.putLookedUpEntry(key, cacheEntry);
+            ctx.offHeapPutLookedUpEntry(key, cacheEntry);
          }
          if (trace) {
             log.tracef("Wrap %s for read. Entry=%s", key, cacheEntry);
@@ -94,20 +106,30 @@ public class OffHeapEntryFactoryImpl implements OffHeapEntryFactory {
       return cacheEntry;
    }
 
-   @Override
-   public final MVCCEntry wrapEntryForClear(InvocationContext ctx, Object key) throws InterruptedException {
+
+
+    @Override
+   public final OffHeapMVCCEntry wrapEntryForClear(InvocationContext ctx, Object key) throws InterruptedException {
       //skipRead == true because the keys values are not read during the ClearOperation (neither by application)
-      MVCCEntry mvccEntry = wrapEntry(ctx, key, null, true);
+      OffHeapMVCCEntry mvccEntry = this.offHeapWrapEntry(ctx, key, null, true);
       if (trace) {
          log.tracef("Wrap %s for clear. Entry=%s", key, mvccEntry);
       }
       return mvccEntry;
    }
 
+    private OffHeapMVCCEntry offHeapWrapEntry(InvocationContext ctx, Object key, Object o, boolean b) {
+        return null;
+    }
+
+
+    private OffHeapCacheEntry offHeapGetFromContext(InvocationContext ctx, Object key) {
+        return null;
+    }
    @Override
-   public final MVCCEntry wrapEntryForReplace(InvocationContext ctx, ReplaceCommand cmd) throws InterruptedException {
+   public final OffHeapMVCCEntry wrapEntryForReplace(InvocationContext ctx, ReplaceCommand cmd) throws InterruptedException {
       Object key = cmd.getKey();
-      MVCCEntry mvccEntry = wrapEntry(ctx, key, cmd.getMetadata(), false);
+      OffHeapMVCCEntry mvccEntry = this.offHeapWrapEntry(ctx, key, cmd.getMetadata(), false);
       if (mvccEntry == null) {
          // make sure we record this! Null value since this is a forced lock on the key
          ctx.putLookedUpEntry(key, null);
@@ -119,21 +141,21 @@ public class OffHeapEntryFactoryImpl implements OffHeapEntryFactory {
    }
 
    @Override
-   public final MVCCEntry wrapEntryForRemove(InvocationContext ctx, Object key, boolean skipRead,
+   public final OffHeapMVCCEntry wrapEntryForRemove(InvocationContext ctx, Object key, boolean skipRead,
                                               boolean forInvalidation, boolean forceWrap) throws InterruptedException {
-      CacheEntry cacheEntry = getFromContext(ctx, key);
-      MVCCEntry mvccEntry = null;
+      OffHeapCacheEntry cacheEntry = offHeapGetFromContext(ctx, key);
+      OffHeapMVCCEntry mvccEntry = null;
       if (cacheEntry != null) {
-         if (cacheEntry instanceof MVCCEntry) {
-            mvccEntry = (MVCCEntry) cacheEntry;
+         if (cacheEntry instanceof OffHeapMVCCEntry) {
+            mvccEntry = (OffHeapMVCCEntry) cacheEntry;
          } else {
             //skipRead == true because the key already exists in the context that means the key was previous accessed.
-            mvccEntry = wrapMvccEntryForRemove(ctx, key, cacheEntry, true);
+            mvccEntry = offHeapWrapMvccEntryForRemove(ctx, key, cacheEntry, true);
          }
       } else {
-         InternalCacheEntry ice = getFromContainer(key, forInvalidation);
+         OffHeapInternalCacheEntry ice = offHeapFromContainer(key, forInvalidation);
          if (ice != null || clusterModeWriteSkewCheck || forceWrap) {
-            mvccEntry = wrapInternalCacheEntryForPut(ctx, key, ice, null, skipRead);
+            mvccEntry = offHeapWrapInternalCacheEntryForPut(ctx, key, ice, null, skipRead);
          }
       }
       if (mvccEntry == null) {
@@ -148,19 +170,36 @@ public class OffHeapEntryFactoryImpl implements OffHeapEntryFactory {
       return mvccEntry;
    }
 
-   @Override
+    private OffHeapMVCCEntry offHeapWrapMvccEntryForRemove(InvocationContext ctx, Object key, OffHeapCacheEntry cacheEntry, boolean skipRead) {
+        return null;
+    }
+
+    private OffHeapMVCCEntry offHeapWrapInternalCacheEntryForPut(InvocationContext ctx, Object key, OffHeapInternalCacheEntry ice, Object o, boolean skipRead) {
+        return null;
+    }
+
+    private OffHeapInternalCacheEntry offHeapFromContainer(Object key, boolean forInvalidation) {
+       return null;
+    }
+
+    @Override
    //removed final modifier to allow mock this method
-   public MVCCEntry wrapEntryForPut(InvocationContext ctx, Object key, InternalCacheEntry icEntry,
-         boolean undeleteIfNeeded, FlagAffectedCommand cmd, boolean skipRead) throws InterruptedException {
-      CacheEntry cacheEntry = getFromContext(ctx, key);
-      MVCCEntry mvccEntry;
+   public OffHeapMVCCEntry wrapEntryForPut(
+            OffHeapInvocationContext ctx,
+            Object key,
+            OffHeapInternalCacheEntry icEntry,
+            boolean undeleteIfNeeded,
+            OffHeapFlagAffectedCommand cmd,
+            boolean skipRead)                throws InterruptedException {
+      OffHeapCacheEntry cacheEntry = offHeapGetFromContext(ctx, key);
+      OffHeapMVCCEntry mvccEntry;
       if (cacheEntry != null && cacheEntry.isNull() && !useRepeatableRead) cacheEntry = null;
-      Metadata providedMetadata = cmd.getMetadata();
+      OffHeapMetadata providedMetadata = cmd.GetOffHeapMetadata();
       if (cacheEntry != null) {
          if (useRepeatableRead) {
             //sanity check. In repeatable read, we only deal with RepeatableReadEntry and ClusteredRepeatableReadEntry
-            if (cacheEntry instanceof RepeatableReadEntry) {
-               mvccEntry = (MVCCEntry) cacheEntry;
+            if (cacheEntry instanceof OffHeapRepeatableReadEntry) {
+               mvccEntry = (OffHeapMVCCEntry) cacheEntry;
             } else {
                throw new IllegalStateException("Cache entry stored in context should be a RepeatableReadEntry instance " +
                                                      "but it is " + cacheEntry.getClass().getCanonicalName());
@@ -168,22 +207,22 @@ public class OffHeapEntryFactoryImpl implements OffHeapEntryFactory {
             //if the icEntry is not null, then this is a remote get. We need to update the value and the metadata.
             if (!mvccEntry.isRemoved() && !mvccEntry.skipLookup() && icEntry != null) {
                mvccEntry.setValue(icEntry.getValue());
-               updateVersion(mvccEntry, icEntry.getMetadata());
+               this.offHeapUpdateVersion(mvccEntry, icEntry.getMetadata());
             }
             if (!mvccEntry.isRemoved() && mvccEntry.isNull()) {
                //new entry
                mvccEntry.setCreated(true);
             }
             //always update the metadata if needed.
-            updateMetadata(mvccEntry, providedMetadata);
+            this.offHeapUpdateMetadata(mvccEntry, providedMetadata);
 
          } else {
             //skipRead == true because the key already exists in the context that means the key was previous accessed.
-            mvccEntry = wrapMvccEntryForPut(ctx, key, cacheEntry, providedMetadata, true);
+            mvccEntry = offHeapWrapMvccEntryForPut(ctx, key, cacheEntry, providedMetadata, true);
          }
          mvccEntry.undelete(undeleteIfNeeded);
       } else {
-         InternalCacheEntry ice = (icEntry == null ? getFromContainer(key, false) : icEntry);
+         OffHeapInternalCacheEntry ice = (icEntry == null ? offHeapGetFromContainer(key, false) : icEntry);
          // A putForExternalRead is putIfAbsent, so if key present, do nothing
          if (ice != null && cmd.hasFlag(Flag.PUT_FOR_EXTERNAL_READ)) {
             // make sure we record this! Null value since this is a forced lock on the key
@@ -195,8 +234,8 @@ public class OffHeapEntryFactoryImpl implements OffHeapEntryFactory {
          }
 
          mvccEntry = ice != null ?
-             wrapInternalCacheEntryForPut(ctx, key, ice, providedMetadata, skipRead) :
-             newMvccEntryForPut(ctx, key, cmd, providedMetadata, skipRead);
+             this.offHeapWrapInternalCacheEntryForPut(ctx, key, ice, providedMetadata, skipRead) :
+             this.offHeapNewMvccEntryForPut(ctx, key, cmd, providedMetadata, skipRead);
       }
       mvccEntry.copyForUpdate(container);
       if (trace) {
@@ -204,16 +243,55 @@ public class OffHeapEntryFactoryImpl implements OffHeapEntryFactory {
       }
       return mvccEntry;
    }
-   
+
+    @Override
+    public OffHeapCacheEntry wrapEntryForDelta(InvocationContext ctx, Object deltaKey, Delta delta) throws InterruptedException {
+        return null;
+    }
+
+    @Override
+    public OffHeapMVCCEntry wrapEntryForPut(InvocationContext ctx, Object key, OffHeapInternalCacheEntry ice, boolean undeleteIfNeeded, FlagAffectedCommand cmd, boolean skipRead) throws InterruptedException {
+        return null;
+    }
+
+    private OffHeapMVCCEntry offHeapNewMvccEntryForPut(OffHeapInvocationContext ctx, Object key, OffHeapFlagAffectedCommand cmd, OffHeapMetadata providedMetadata, boolean skipRead) {
+        return null;
+    }
+
+    private void offHeapUpdateMetadata(OffHeapMVCCEntry mvccEntry, OffHeapMetadata providedMetadata) {
+
+    }
+
+    private OffHeapMVCCEntry offHeapNewMvccEntryForPut(
+                                                        OffHeapInvocationContext ctx,
+                                                        Object key, FlagAffectedCommand cmd,
+                                                        OffHeapMetadata providedMetadata,
+                                                        boolean skipRead) {
+        return null;
+    }
+
+
+    private void offHeapUpdateVersion(OffHeapMVCCEntry mvccEntry, OffHeapMetadata metadata) {
+    }
+
    @Override
-   public CacheEntry wrapEntryForDelta(InvocationContext ctx, Object deltaKey, Delta delta ) throws InterruptedException {
-      CacheEntry cacheEntry = getFromContext(ctx, deltaKey);
-      DeltaAwareCacheEntry deltaAwareEntry = null;
+   public OffHeapCacheEntry wrapEntryForDelta(
+           OffHeapInvocationContext ctx,
+           Object deltaKey,
+           Delta delta)                           throws InterruptedException {
+
+        OffHeapCacheEntry cacheEntry = offHeapGetFromContext(ctx, deltaKey);
+      OffHeapDeltaAwareCacheEntry deltaAwareEntry = null;
       if (cacheEntry != null) {        
-         deltaAwareEntry = wrapEntryForDelta(ctx, deltaKey, cacheEntry);
+//         deltaAwareEntry =  offHeapWrapInternalCacheEntryForPut(
+//                  OffHeapInvocationContext,
+//                  Object ,
+//                  OffHeapInternalCacheEntry ,
+//                  OffHeapMetadata ,
+//                  boolean ) {} tryForDelta(ctx, deltaKey, cacheEntry);
       } else {                     
-         InternalCacheEntry ice = getFromContainer(deltaKey, false);
-         if (ice != null){
+         OffHeapInternalCacheEntry ice = this.offHeapFromContainer(deltaKey, false);
+         if (ice != null) {
             deltaAwareEntry = newDeltaAwareCacheEntry(ctx, deltaKey, (DeltaAware)ice.getValue());
          }
       }
@@ -225,87 +303,148 @@ public class OffHeapEntryFactoryImpl implements OffHeapEntryFactory {
       return deltaAwareEntry;
    }
    
-   private DeltaAwareCacheEntry wrapEntryForDelta(InvocationContext ctx, Object key, CacheEntry cacheEntry) {
-      if (cacheEntry instanceof DeltaAwareCacheEntry) return (DeltaAwareCacheEntry) cacheEntry;
-      return wrapInternalCacheEntryForDelta(ctx, key, cacheEntry);
+   private OffHeapDeltaAwareCacheEntry wrapEntryForDelta(OffHeapInvocationContext ctx, Object key, OffHeapCacheEntry cacheEntry) {
+      if (cacheEntry instanceof OffHeapDeltaAwareCacheEntry) return (OffHeapDeltaAwareCacheEntry) cacheEntry;
+      return offHeapWrapInternalCacheEntryForDelta(ctx, key, cacheEntry);
    }
-   
-   private DeltaAwareCacheEntry wrapInternalCacheEntryForDelta(InvocationContext ctx, Object key, CacheEntry cacheEntry) {
-      DeltaAwareCacheEntry e;
-      if(cacheEntry instanceof MVCCEntry){
+
+    private OffHeapDeltaAwareCacheEntry offHeapWrapInternalCacheEntryForDelta(
+                                                                        OffHeapInvocationContext ctx,
+                                                                        Object key,
+                                                                        OffHeapCacheEntry cacheEntry) {
+        return null;
+    }
+
+    private OffHeapDeltaAwareCacheEntry wrapInternalCacheEntryForDelta(
+                                                    OffHeapInvocationContext ctx,
+                                                    Object key,
+                                                    OffHeapCacheEntry cacheEntry) {
+      OffHeapDeltaAwareCacheEntry e;
+      if(cacheEntry instanceof OffHeapMVCCEntry){
          e = createWrappedDeltaEntry(key, (DeltaAware) cacheEntry.getValue(), cacheEntry);
       }
-      else if (cacheEntry instanceof InternalCacheEntry) {
-         cacheEntry = wrapInternalCacheEntryForPut(ctx, key, (InternalCacheEntry) cacheEntry, null, false);
+      else if (cacheEntry instanceof OffHeapInternalCacheEntry) {
+         cacheEntry = offHeapWrapInternalCacheEntryForPut(ctx, key, (OffHeapInternalCacheEntry) cacheEntry, null, false);
          e = createWrappedDeltaEntry(key, (DeltaAware) cacheEntry.getValue(), cacheEntry);
       }
       else {
          e = createWrappedDeltaEntry(key, (DeltaAware) cacheEntry.getValue(), null);
       }
-      ctx.putLookedUpEntry(key, e);
+      ctx.offHeapPutLookedUpEntry(key, e);
       return e;
 
    }
 
-   private CacheEntry getFromContext(InvocationContext ctx, Object key) {
-      final CacheEntry cacheEntry = ctx.lookupEntry(key);
+    private OffHeapCacheEntry offHeapWrapInternalCacheEntryForPut(
+                                                    OffHeapInvocationContext ctx,
+                                                    Object key,
+                                                    OffHeapInternalCacheEntry cacheEntry,
+                                                    Object o,
+                                                    boolean b) {
+        return null;
+    }
+
+    private OffHeapCacheEntry offHeapGetFromContext(OffHeapInvocationContext ctx, Object key) {
+      final OffHeapCacheEntry cacheEntry = ctx.lookupEntry(key);
       if (trace) log.tracef("Exists in context? %s ", cacheEntry);
       return cacheEntry;
    }
 
-   private InternalCacheEntry getFromContainer(Object key, boolean forceFetch) {
+   private OffHeapInternalCacheEntry offHeapGetFromContainer(Object key, boolean forceFetch) {
       final boolean isLocal = distributionManager == null || distributionManager.getLocality(key).isLocal();
-      final InternalCacheEntry ice = isL1Enabled || isLocal || forceFetch ? container.get(key) : null;
+      final OffHeapInternalCacheEntry ice = isL1Enabled || isLocal || forceFetch ? container.get(key) : null;
       if (trace) log.tracef("Retrieved from container %s (isL1Enabled=%s, isLocal=%s)", ice, isL1Enabled, isLocal);
       return ice;
    }
 
-   private MVCCEntry newMvccEntryForPut(
-         InvocationContext ctx, Object key, FlagAffectedCommand cmd, Metadata providedMetadata, boolean skipRead) {
-      MVCCEntry mvccEntry;
+   private OffHeapMVCCEntry newMvccEntryForPut(
+                                    OffHeapInvocationContext ctx,
+                                    Object key,
+                                    FlagAffectedCommand cmd,
+                                    OffHeapMetadata providedMetadata,
+                                    boolean skipRead) {
+      OffHeapMVCCEntry mvccEntry;
       if (trace) log.trace("Creating new entry.");
-      notifier.notifyCacheEntryCreated(key, null, true, ctx, cmd);
-      mvccEntry = createWrappedEntry(key, null, ctx, providedMetadata, true, false, skipRead);
+      Object v=null;
+      boolean tf = true;
+      this.notifier.offHeapNotifyCacheEntryCreated(key, v, tf, ctx, cmd);
+      mvccEntry = this.offHeapCreateWrappedEntry(key, null, ctx, providedMetadata, true, false, skipRead);
       mvccEntry.setCreated(true);
-      ctx.putLookedUpEntry(key, mvccEntry);
+      ctx.offHeapPutLookedUpEntry(key, mvccEntry);
       return mvccEntry;
    }
+//    public  void offHeapNotifyCacheEntryCreated(
+//                                                    Object key,
+//                                                    Object v,
+//                                                    boolean tf,
+//                                                    OffHeapInvocationContext ctx,
+//                                                    FlagAffectedCommand cmd) {
+//
+//    }
+    private OffHeapMVCCEntry offHeapCreateWrappedEntry(
+                                                    Object key,
+                                                    Object o,
+                                                    OffHeapInvocationContext ctx,
+                                                    OffHeapMetadata providedMetadata,
+                                                    boolean b,
+                                                    boolean b1,
+                                                    boolean skipRead) {
+        return null;
+    }
 
-   private MVCCEntry wrapMvccEntryForPut(InvocationContext ctx, Object key, CacheEntry cacheEntry, Metadata providedMetadata, boolean skipRead) {
-      if (cacheEntry instanceof MVCCEntry) {
-         MVCCEntry mvccEntry = (MVCCEntry) cacheEntry;
-         updateMetadata(mvccEntry, providedMetadata);
+    private OffHeapMVCCEntry offHeapWrapMvccEntryForPut(
+                                                    OffHeapInvocationContext ctx,
+                                                    Object key,
+                                                    OffHeapCacheEntry cacheEntry,
+                                                    OffHeapMetadata providedMetadata,
+                                                    boolean skipRead) {
+      if (cacheEntry instanceof OffHeapMVCCEntry) {
+         OffHeapMVCCEntry mvccEntry = (OffHeapMVCCEntry) cacheEntry;
+         this.offHeapUpdateMetadata(mvccEntry, providedMetadata);
          return mvccEntry;
       }
-      return wrapInternalCacheEntryForPut(ctx, key, (InternalCacheEntry) cacheEntry, providedMetadata, skipRead);
+      return offHeapWrapInternalCacheEntryForPut(
+              ctx,
+              key,
+              (OffHeapInternalCacheEntry) cacheEntry,
+              providedMetadata,
+              skipRead);
    }
 
-   private MVCCEntry wrapInternalCacheEntryForPut(InvocationContext ctx, Object key, InternalCacheEntry cacheEntry, Metadata providedMetadata, boolean skipRead) {
-      MVCCEntry mvccEntry = createWrappedEntry(key, cacheEntry, ctx, providedMetadata, true, false, skipRead);
-      ctx.putLookedUpEntry(key, mvccEntry);
+   private OffHeapMVCCEntry offHeapWrapInternalCacheEntryForPut(
+                                                        OffHeapInvocationContext ctx,
+                                                        Object key,
+                                                        OffHeapInternalCacheEntry cacheEntry,
+                                                        OffHeapMetadata providedMetadata,
+                                                        boolean skipRead) {
+      OffHeapMVCCEntry mvccEntry = offHeapCreateWrappedEntry(key, cacheEntry, ctx, providedMetadata, true, false, skipRead);
+      ctx.offHeapPutLookedUpEntry(key, mvccEntry);
       return mvccEntry;
    }
 
-   private MVCCEntry wrapMvccEntryForRemove(InvocationContext ctx, Object key, CacheEntry cacheEntry, boolean skipRead) {
-      MVCCEntry mvccEntry = createWrappedEntry(key, cacheEntry, ctx, null, false, true, skipRead);
+   private OffHeapMVCCEntry offHeapWrapMvccEntryForRemove(OffHeapInvocationContext ctx,
+                                                          Object key,
+                                                          OffHeapCacheEntry cacheEntry,
+                                                          boolean skipRead) {
+      OffHeapMVCCEntry mvccEntry = offHeapCreateWrappedEntry(key, cacheEntry, ctx, null, false, true, skipRead);
       // If the original entry has changeable state, copy state flags to the new MVCC entry.
-      if (cacheEntry instanceof StateChangingEntry)
-         mvccEntry.copyStateFlagsFrom((StateChangingEntry) cacheEntry);
+      if (cacheEntry instanceof OffHeapStateChangingEntry)
+         mvccEntry.copyStateFlagsFrom((OffHeapStateChangingEntry) cacheEntry);
 
-      ctx.putLookedUpEntry(key, mvccEntry);
+      ctx.offHeapPutLookedUpEntry(key, mvccEntry);
       return mvccEntry;
    }
 
-   private MVCCEntry wrapEntry(InvocationContext ctx, Object key, Metadata providedMetadata, boolean skipRead) {
-      CacheEntry cacheEntry = getFromContext(ctx, key);
-      MVCCEntry mvccEntry = null;
+   private OffHeapMVCCEntry wrapEntry(OffHeapInvocationContext ctx, Object key, OffHeapMetadata providedMetadata, boolean skipRead) {
+      OffHeapCacheEntry cacheEntry = offHeapGetFromContext(ctx, key);
+      OffHeapMVCCEntry mvccEntry = null;
       if (cacheEntry != null) {
          //already wrapped. set skip read to true to avoid replace the current version.
-         mvccEntry = wrapMvccEntryForPut(ctx, key, cacheEntry, providedMetadata, true);
+         mvccEntry = offHeapWrapMvccEntryForPut(ctx, key, cacheEntry, providedMetadata, true);
       } else {
-         InternalCacheEntry ice = getFromContainer(key, false);
+         OffHeapInternalCacheEntry ice = offHeapGetFromContainer(key, false);
          if (ice != null || clusterModeWriteSkewCheck) {
-            mvccEntry = wrapInternalCacheEntryForPut(ctx, key, ice, providedMetadata, skipRead);
+            mvccEntry = this.offHeapwWrapInternalCacheEntryForPut(ctx, key, ice, providedMetadata, skipRead);
          }
       }
       if (mvccEntry != null)
@@ -313,10 +452,20 @@ public class OffHeapEntryFactoryImpl implements OffHeapEntryFactory {
       return mvccEntry;
    }
 
-   protected MVCCEntry createWrappedEntry(Object key, CacheEntry cacheEntry, InvocationContext context,
-                                          Metadata providedMetadata, boolean isForInsert, boolean forRemoval, boolean skipRead) {
+    private OffHeapMVCCEntry offHeapwWrapInternalCacheEntryForPut(OffHeapInvocationContext ctx, Object key, OffHeapInternalCacheEntry ice, OffHeapMetadata providedMetadata, boolean skipRead) {
+        return null;
+    }
+
+    protected OffHeapMVCCEntry createWrappedEntry(
+                                            Object key,
+                                            OffHeapCacheEntry cacheEntry,
+                                            OffHeapInvocationContext context,
+                                            OffHeapMetadata providedMetadata,
+                                            boolean isForInsert,
+                                            boolean forRemoval,
+                                            boolean skipRead) {
       Object value = cacheEntry != null ? cacheEntry.getValue() : null;
-      Metadata metadata = providedMetadata != null
+      OffHeapMetadata metadata = providedMetadata != null
             ? providedMetadata
             : cacheEntry != null ? cacheEntry.getMetadata() : null;
 
@@ -324,21 +473,25 @@ public class OffHeapEntryFactoryImpl implements OffHeapEntryFactory {
          return null;
 
       return useRepeatableRead
-            ? new RepeatableReadEntry(key, value, metadata)
-            : new ReadCommittedEntry(key, value, metadata);
+            ? new OffHeapClusteredRepeatableReadEntry(key, value, metadata)
+            : new OffHeapClusteredRepeatableReadEntry(key, value, metadata); //yes, we know its a placeholder.
    }
    
-   private DeltaAwareCacheEntry newDeltaAwareCacheEntry(InvocationContext ctx, Object key, DeltaAware deltaAware){
-      DeltaAwareCacheEntry deltaEntry = createWrappedDeltaEntry(key, deltaAware, null);
-      ctx.putLookedUpEntry(key, deltaEntry);
+   private OffHeapDeltaAwareCacheEntry newDeltaAwareCacheEntry(OffHeapInvocationContext ctx, Object key, DeltaAware deltaAware){
+      OffHeapDeltaAwareCacheEntry deltaEntry = this.offHeapCreateWrappedDeltaEntry(key, deltaAware, null);
+      ctx.offHeapPutLookedUpEntry(key, deltaEntry);
       return deltaEntry;
    }
-   
-   private DeltaAwareCacheEntry createWrappedDeltaEntry(Object key, DeltaAware deltaAware, CacheEntry entry) {
-      return new DeltaAwareCacheEntry(key,deltaAware, entry);
+
+    private OffHeapDeltaAwareCacheEntry offHeapCreateWrappedDeltaEntry(Object key, DeltaAware deltaAware, Object o) {
+        return null;
+    }
+
+    private OffHeapDeltaAwareCacheEntry createWrappedDeltaEntry(Object key, DeltaAware deltaAware, OffHeapCacheEntry entry) {
+      return new OffHeapDeltaAwareCacheEntry(key,deltaAware, entry);
    }
 
-   private void updateMetadata(MVCCEntry entry, Metadata providedMetadata) {
+   private void updateMetadata(OffHeapMVCCEntry entry, OffHeapMetadata providedMetadata) {
       if (trace) {
          log.tracef("Update metadata for %s. Provided metadata is %s", entry, providedMetadata);
       }
@@ -348,7 +501,7 @@ public class OffHeapEntryFactoryImpl implements OffHeapEntryFactory {
       entry.setMetadata(providedMetadata);
    }
 
-   private void updateVersion(MVCCEntry entry, Metadata providedMetadata) {
+   private void updateVersion(OffHeapMVCCEntry entry, OffHeapMetadata providedMetadata) {
       if (trace) {
          log.tracef("Update metadata for %s. Provided metadata is %s", entry, providedMetadata);
       }
@@ -359,7 +512,7 @@ public class OffHeapEntryFactoryImpl implements OffHeapEntryFactory {
          return;
       }
 
-      entry.setMetadata(Metadatas.applyVersion(entry.getMetadata(), providedMetadata));
+      entry.setMetadata(OffHeapMetadatas.applyVersion(entry.getMetadata(), providedMetadata));
    }
 
 }

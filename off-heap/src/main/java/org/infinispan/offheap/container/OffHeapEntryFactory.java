@@ -7,6 +7,7 @@ import org.infinispan.context.InvocationContext;
 import org.infinispan.offheap.container.entries.OffHeapCacheEntry;
 import org.infinispan.offheap.container.entries.OffHeapInternalCacheEntry;
 import org.infinispan.offheap.container.entries.OffHeapMVCCEntry;
+import org.infinispan.offheap.context.OffHeapInvocationContext;
 
 
 /**
@@ -35,7 +36,9 @@ public interface OffHeapEntryFactory {
     */
    OffHeapCacheEntry wrapEntryForReading(InvocationContext ctx, Object key) throws InterruptedException;
 
-   /**
+    OffHeapCacheEntry wrapEntryForReading(OffHeapInvocationContext ctx, Object key) throws InterruptedException;
+
+    /**
     * Used for wrapping individual keys when clearing the cache. The wrapped entry is added to the
     * supplied InvocationContext.
     */
@@ -55,8 +58,17 @@ public interface OffHeapEntryFactory {
     */
    OffHeapMVCCEntry wrapEntryForRemove(InvocationContext ctx, Object key, boolean skipRead, boolean forInvalidation,
                                 boolean forceWrap) throws InterruptedException;
-   
-   /**
+
+    //removed final modifier to allow mock this method
+    OffHeapMVCCEntry wrapEntryForPut(
+            OffHeapInvocationContext ctx,
+            Object key,
+            OffHeapInternalCacheEntry icEntry,
+            boolean undeleteIfNeeded,
+            OffHeapFlagAffectedCommand cmd,
+            boolean skipRead)                throws InterruptedException;
+
+    /**
     * Used for wrapping Delta entry to be applied to DeltaAware object stored in cache. The wrapped
     * entry is added to the supplied InvocationContext.
     */
@@ -71,4 +83,9 @@ public interface OffHeapEntryFactory {
     */
    OffHeapMVCCEntry wrapEntryForPut(InvocationContext ctx, Object key, OffHeapInternalCacheEntry ice,
                              boolean undeleteIfNeeded, FlagAffectedCommand cmd, boolean skipRead) throws InterruptedException;
+
+    OffHeapCacheEntry wrapEntryForDelta(
+            OffHeapInvocationContext ctx,
+            Object deltaKey,
+            Delta delta)                           throws InterruptedException;
 }

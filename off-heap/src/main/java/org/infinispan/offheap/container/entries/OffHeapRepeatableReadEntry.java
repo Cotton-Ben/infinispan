@@ -70,10 +70,8 @@ public abstract class OffHeapRepeatableReadEntry extends OffHeapReadCommittedEnt
 
     public abstract OffHeapEntryVersion getVersion();
 
-    @Override
-    public void copyForUpdate(DataContainer container) {
 
-    }
+    public abstract void copyForUpdate(DataContainer container);
 
     @Override
    public boolean isNull() {

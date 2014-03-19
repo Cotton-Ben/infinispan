@@ -5,8 +5,10 @@ import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
 import org.infinispan.metadata.EmbeddedMetadata;
+import org.infinispan.metadata.Metadata;
 import org.infinispan.offheap.container.entries.OffHeapClusteredRepeatableReadEntry;
 import org.infinispan.offheap.context.OffHeapInvocationContext;
+import org.infinispan.offheap.metadata.OffHeapEmbeddedMetadata;
 import org.infinispan.offheap.metadata.OffHeapMetadatas;
 import org.infinispan.offheap.container.entries.OffHeapCacheEntry;
 import org.infinispan.offheap.container.entries.OffHeapMVCCEntry;
@@ -57,14 +59,25 @@ public class OffHeapIncrementalVersionableEntryFactoryImpl extends OffHeapEntryF
             metadata = providedMetadata;
          }
          if (context.isOriginLocal() && context.isInTxScope()) {
-            ((TxInvocationContext) context).getCacheTransaction().addVersionRead(key, skipRead ? null : metadata.version());
+             //ben.cotton@jpmorgan.com  OpenHFT SHM does not support ACID transactions at the moment.
+            ((TxInvocationContext) context).getCacheTransaction().addVersionRead(
+                                                            key,
+                                                            skipRead ? null : null/* metadata.version() */);
          }
       } else {
          value = null;
-         metadata = providedMetadata == null ? new EmbeddedMetadata.Builder().version(versionGenerator.nonExistingVersion()).build()
+         metadata = providedMetadata == null ? new OffHeapEmbeddedMetadata
+                                                            .OffHeapBuilder()
+                                                            .version(versionGenerator.nonExistingVersion())
+                                                            .build()
                : providedMetadata;
          if (context.isOriginLocal() && context.isInTxScope()) {
-            ((TxInvocationContext) context).getCacheTransaction().addVersionRead(key, skipRead ? null : versionGenerator.nonExistingVersion());
+            //((TxInvocationContext) context).getCacheTransaction().addVersionRead(key, skipRead ? null : versionGenerator.nonExistingVersion());
+            //ben.cotton@jpmorgan.com  OpenHFT SHM does not support ACID transactions at the moment.
+            ((TxInvocationContext) context).getCacheTransaction().addVersionRead(
+                     key,
+                     skipRead ? null : null/* versionGenerator.nonExistingVersion() */);
+
          }
       }
 

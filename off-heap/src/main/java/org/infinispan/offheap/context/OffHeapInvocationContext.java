@@ -2,6 +2,8 @@ package org.infinispan.offheap.context;
 
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.context.EntryLookup;
+import org.infinispan.offheap.container.entries.OffHeapCacheEntry;
+import org.infinispan.offheap.container.entries.OffHeapMVCCEntry;
 import org.infinispan.remoting.transport.Address;
 
 import java.util.Set;
@@ -42,7 +44,7 @@ public interface OffHeapInvocationContext extends OffHeapEntryLookup, Cloneable 
     *
     * @return A cloned instance of this invocation context instance
     */
-   InvocationContext clone();
+   OffHeapInvocationContext clone();
 
    /**
     * Returns the set of keys that are locked for writing.
@@ -86,4 +88,9 @@ public interface OffHeapInvocationContext extends OffHeapEntryLookup, Cloneable 
    boolean replaceValue(Object key, InternalCacheEntry cacheEntry);
 
    boolean isEntryRemovedInContext(Object key);
+
+
+    void offHeapPutLookedUpEntry(Object key, OffHeapMVCCEntry mvccEntry);
+
+    void offHeapPutLookedUpEntry(Object key, OffHeapCacheEntry cacheEntry);
 }

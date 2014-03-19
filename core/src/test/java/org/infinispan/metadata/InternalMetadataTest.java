@@ -1,6 +1,7 @@
 package org.infinispan.metadata;
 
 import org.infinispan.container.entries.AbstractInternalCacheEntry;
+import org.infinispan.container.entries.InternalCacheValue;
 import org.infinispan.container.versioning.EntryVersion;
 import org.testng.annotations.Test;
 
@@ -209,7 +210,7 @@ public class InternalMetadataTest {
       }
 
       @Override
-      public OffHeapInternalCacheValue toInternalCacheValue() {
+      public InternalCacheValue toInternalCacheValue() {
          return null;
       }
 
