@@ -39,7 +39,9 @@ public class OffHeapDefaultDataContainerTest extends AbstractInfinispanTest {
 
     @BeforeMethod
     public void setUp() {
+        System.out.println("JCACHE DataContainer view of OpenHFT SHM is being created");
         dc = createContainer();
+        System.out.println("JCACHE DataContainer dc=["+dc.toString()+"]");
     }
 
     @AfterMethod
@@ -1507,11 +1509,17 @@ public class OffHeapDefaultDataContainerTest extends AbstractInfinispanTest {
 
             }
         };
-        dc.put("k1", bondV, new OffHeapEmbeddedMetadata.OffHeapBuilder().lifespan(100, TimeUnit.MINUTES).build());
-        dc.put("k2", bondV, new OffHeapEmbeddedMetadata.OffHeapBuilder().build());
-        dc.put("k3", bondV, new OffHeapEmbeddedMetadata.OffHeapBuilder().maxIdle(100, TimeUnit.MINUTES).build());
-        dc.put("k4", bondV, new OffHeapEmbeddedMetadata.OffHeapBuilder()
-                .maxIdle(100, TimeUnit.MINUTES).lifespan(100, TimeUnit.MINUTES).build());
+        bondV.setMaturityDate(20440315L);
+        bondV.setCoupon(5.0/100.0);
+        bondV.setSymbol("IBM_HY_2044");
+        System.out.println("bondV.getSymbol=["+bondV.getSymbol()+"]");
+        dc.put("CUSIP1234", bondV, new OffHeapEmbeddedMetadata.OffHeapBuilder().lifespan(100, TimeUnit.MINUTES).build());
+        dc.put("CUSIP4321", bondV, new OffHeapEmbeddedMetadata.OffHeapBuilder().build());
+        dc.put("1234CUSIP", bondV, new OffHeapEmbeddedMetadata.OffHeapBuilder().maxIdle(100, TimeUnit.MINUTES).build());
+        dc.put("4321CUSIP", bondV, new OffHeapEmbeddedMetadata.OffHeapBuilder()
+                                    .maxIdle(100, TimeUnit.MINUTES)
+                                    .lifespan(100, TimeUnit.MINUTES)
+                                    .build());
 
         Set<String> expected = new HashSet<String>();
         expected.add("k1");

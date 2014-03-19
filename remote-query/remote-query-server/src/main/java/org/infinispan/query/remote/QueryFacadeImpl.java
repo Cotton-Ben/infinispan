@@ -32,7 +32,7 @@ import org.infinispan.query.remote.search.NullEncodingDoubleNumericFieldBridge;
 import org.infinispan.query.remote.search.NullEncodingFloatNumericFieldBridge;
 import org.infinispan.query.remote.search.NullEncodingIntegerNumericFieldBridge;
 import org.infinispan.query.remote.search.NullEncodingLongNumericFieldBridge;
-import org.infinispan.server.core.QueryFacade;
+//import org.infinispan.server.core.QueryFacade;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ import java.util.List;
  * @author anistor@redhat.com
  * @since 6.0
  */
-public class QueryFacadeImpl implements QueryFacade {
+public class QueryFacadeImpl { //implements QueryFacade {
 
    /**
     * A special hidden Lucene document field that holds the actual protobuf type name.
@@ -55,7 +55,7 @@ public class QueryFacadeImpl implements QueryFacade {
     */
    public static final String NULL_TOKEN = "_null_";
 
-   @Override
+   //@Override
    public byte[] query(AdvancedCache<byte[], byte[]> cache, byte[] query) {
       if (!cache.getCacheConfiguration().indexing().enabled()) {
          throw new CacheException("Indexing is not enabled for cache " + cache.getName());
