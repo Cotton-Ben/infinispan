@@ -49,14 +49,18 @@ public class DefaultDataContainer implements DataContainer {
    private static final Log log = LogFactory.getLog(DefaultDataContainer.class);
    private static final boolean trace = log.isTraceEnabled();
 
-   final protected ConcurrentMap<Object, InternalCacheEntry> entries;
+   protected ConcurrentMap<Object, InternalCacheEntry> entries;
    protected InternalEntryFactory entryFactory;
-   final protected DefaultEvictionListener evictionListener;
+   protected DefaultEvictionListener evictionListener;
    private EvictionManager evictionManager;
    private PassivationManager passivator;
    private ActivationManager activator;
    private PersistenceManager pm;
    private TimeService timeService;
+
+   public DefaultDataContainer() {
+
+   }
 
    public DefaultDataContainer(int concurrencyLevel) {
       // If no comparing implementations passed, could fallback on JDK CHM

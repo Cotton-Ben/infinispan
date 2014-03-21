@@ -64,7 +64,7 @@
         <dependency>
             <groupId>net.openhft</groupId>
             <artifactId>collections</artifactId>
-            <version>3.0b</version>
+            <version>3.0c</version>
         </dependency>
         <dependency>
             <groupId>net.openhft</groupId>
