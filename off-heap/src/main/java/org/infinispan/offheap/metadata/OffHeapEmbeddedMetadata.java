@@ -2,8 +2,10 @@ package org.infinispan.offheap.metadata;
 
 import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.util.Util;
+import org.infinispan.container.versioning.EntryVersion;
 import org.infinispan.marshall.core.Ids;
-import org.infinispan.offheap.container.versioning.OffHeapEntryVersion;
+import org.infinispan.metadata.EmbeddedMetadata;
+import org.infinispan.metadata.Metadata;
 import org.jboss.marshalling.util.IdentityIntMap;
 
 import java.io.IOException;
@@ -18,11 +20,11 @@ import java.util.concurrent.TimeUnit;
  * @author Galder Zamarreño
  * @since 5.3
  */
-public class OffHeapEmbeddedMetadata implements OffHeapMetadata {
+public class OffHeapEmbeddedMetadata implements Metadata {
 
-   final OffHeapEntryVersion version;
+   final EntryVersion version;
 
-   private OffHeapEmbeddedMetadata(OffHeapEntryVersion version) {
+   private OffHeapEmbeddedMetadata(EntryVersion version) {
       this.version = version;
    }
 
@@ -37,12 +39,12 @@ public class OffHeapEmbeddedMetadata implements OffHeapMetadata {
    }
 
    @Override
-   public OffHeapEntryVersion version() {
+   public EntryVersion version() {
       return version;
    }
 
    @Override
-   public OffHeapEmbeddedMetadata.OffHeapBuilder builder() {
+   public Metadata.Builder builder() {
       return new OffHeapEmbeddedMetadata.OffHeapBuilder().version(version);
    }
 
@@ -71,13 +73,13 @@ public class OffHeapEmbeddedMetadata implements OffHeapMetadata {
             '}';
    }
 
-   public static class OffHeapBuilder implements OffHeapMetadata.Builder {
+   public static class OffHeapBuilder implements Metadata.Builder {
 
       protected long lifespan = -1;
       protected TimeUnit lifespanUnit = TimeUnit.MILLISECONDS;
       protected long maxIdle = -1;
       protected TimeUnit maxIdleUnit = TimeUnit.MILLISECONDS;
-      protected OffHeapEntryVersion version;
+      protected EntryVersion version;
 
       @Override
       public OffHeapEmbeddedMetadata.OffHeapBuilder lifespan(long time, TimeUnit unit) {
@@ -104,13 +106,13 @@ public class OffHeapEmbeddedMetadata implements OffHeapMetadata {
       }
 
       @Override
-      public OffHeapEmbeddedMetadata.OffHeapBuilder version(OffHeapEntryVersion version) {
+      public Metadata.Builder version(EntryVersion version) {
          this.version = version;
          return this;
       }
 
       @Override
-      public OffHeapMetadata build() {
+      public Metadata build() {
          if (lifespan < 0 && maxIdle < 0)
             return new OffHeapEmbeddedMetadata(version);
          else
@@ -127,7 +129,7 @@ public class OffHeapEmbeddedMetadata implements OffHeapMetadata {
 
       private OffHeapEmbeddedExpirableMetadata(
             long lifespan, TimeUnit lifespanUnit,
-            long maxIdle, TimeUnit maxIdleUnit, OffHeapEntryVersion version) {
+            long maxIdle, TimeUnit maxIdleUnit, EntryVersion version) {
          super(version);
          this.lifespan = lifespanUnit.toMillis(lifespan);
          this.maxIdle = maxIdleUnit.toMillis(maxIdle);
@@ -144,7 +146,7 @@ public class OffHeapEmbeddedMetadata implements OffHeapMetadata {
       }
 
       @Override
-      public  OffHeapEmbeddedMetadata.OffHeapBuilder builder() {
+      public  Metadata.Builder builder() {
          return new OffHeapBuilder()
                .lifespan(lifespan).maxIdle(lifespan).version(version);
       }
@@ -223,12 +225,12 @@ public class OffHeapEmbeddedMetadata implements OffHeapMetadata {
          switch (number) {
             case IMMORTAL:
                return new OffHeapEmbeddedMetadata(
-                     (OffHeapEntryVersion) input.readObject()
+                     (EntryVersion) input.readObject()
                );
             case EXPIRABLE:
                long lifespan = input.readLong();
                long maxIdle = input.readLong();
-               OffHeapEntryVersion version = (OffHeapEntryVersion) input.readObject();
+               EntryVersion version = (EntryVersion) input.readObject();
                return new OffHeapEmbeddedExpirableMetadata(
                      lifespan, TimeUnit.MILLISECONDS,
                      maxIdle, TimeUnit.MILLISECONDS, version);

@@ -5,8 +5,10 @@ import org.infinispan.atomic.CopyableDeltaAware;
 import org.infinispan.atomic.Delta;
 import org.infinispan.atomic.DeltaAware;
 import org.infinispan.commons.util.Util;
-import org.infinispan.offheap.container.OffHeapDataContainer;
-import org.infinispan.offheap.metadata.OffHeapMetadata;
+import org.infinispan.container.DataContainer;
+import org.infinispan.container.entries.CacheEntry;
+import org.infinispan.container.entries.StateChangingEntry;
+import org.infinispan.metadata.Metadata;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
@@ -29,12 +31,12 @@ import static org.infinispan.offheap.container.entries.OffHeapDeltaAwareCacheEnt
  * @author dmitry.gordeev@jpmorgan.com
  * @author peter.lawrey@higherfrequencytrading.com
  */
-public class OffHeapDeltaAwareCacheEntry implements OffHeapCacheEntry, OffHeapStateChangingEntry {
+public class OffHeapDeltaAwareCacheEntry implements CacheEntry, StateChangingEntry {
    private static final Log log = LogFactory.getLog(OffHeapDeltaAwareCacheEntry.class);
    private static final boolean trace = log.isTraceEnabled();
 
    protected Object key;
-   protected OffHeapCacheEntry wrappedEntry;
+   protected CacheEntry wrappedEntry;
    protected DeltaAware value, oldValue;
    protected final List<Delta> deltas;
    protected byte flags = 0;
@@ -42,7 +44,7 @@ public class OffHeapDeltaAwareCacheEntry implements OffHeapCacheEntry, OffHeapSt
    // add Map representing uncommitted changes
    protected AtomicHashMap<?, ?> uncommittedChanges;
 
-   public OffHeapDeltaAwareCacheEntry(Object key, DeltaAware value, OffHeapCacheEntry wrappedEntry) {
+   public OffHeapDeltaAwareCacheEntry(Object key, DeltaAware value, CacheEntry wrappedEntry) {
       setValid(true);
       this.key = key;
       this.value = value;
@@ -55,15 +57,15 @@ public class OffHeapDeltaAwareCacheEntry implements OffHeapCacheEntry, OffHeapSt
 
    @Override
    public byte getStateFlags() {
-      if (wrappedEntry instanceof OffHeapStateChangingEntry) {
-         return ((OffHeapStateChangingEntry)wrappedEntry).getStateFlags();
+      if (wrappedEntry instanceof StateChangingEntry) {
+         return ((StateChangingEntry)wrappedEntry).getStateFlags();
       }
 
       return flags;
    }
 
    @Override
-   public void copyStateFlagsFrom(OffHeapStateChangingEntry other) {
+   public void copyStateFlagsFrom(StateChangingEntry other) {
       this.flags = other.getStateFlags();
    }
 
@@ -165,11 +167,11 @@ public class OffHeapDeltaAwareCacheEntry implements OffHeapCacheEntry, OffHeapSt
    }
 
    @Override
-   public final void commit(OffHeapDataContainer container, OffHeapMetadata metadata) {
+   public final void commit(DataContainer container, Metadata metadata) {
       //If possible, we now ensure copy-on-write semantics. This way, it can ensure the correct transaction isolation.
       //note: this method is invoked under the ClusteringDependentLogic.lock(key)
       //note2: we want to merge/copy to/from the data container value.
-      OffHeapCacheEntry entry = container.get(key);
+      CacheEntry entry = container.get(key);
       DeltaAware containerValue = entry == null ? null : (DeltaAware) entry.getValue();
       if (containerValue != null && containerValue != value) {
          value = containerValue;
@@ -197,7 +199,7 @@ public class OffHeapDeltaAwareCacheEntry implements OffHeapCacheEntry, OffHeapSt
       }
    }
 
-   private OffHeapMetadata extractMetadata(OffHeapCacheEntry entry, OffHeapMetadata provided) {
+   private Metadata extractMetadata(CacheEntry entry, Metadata provided) {
       if (provided != null) {
          return provided;
       } else if (wrappedEntry != null) {
@@ -334,12 +336,12 @@ public class OffHeapDeltaAwareCacheEntry implements OffHeapCacheEntry, OffHeapSt
    }
 
    @Override
-   public OffHeapMetadata getMetadata() {
+   public Metadata getMetadata() {
       return null;  // DeltaAware are always metadata unaware
    }
 
     @Override
-    public void setMetadata(OffHeapMetadata metadata) {
+    public void setMetadata(Metadata metadata) {
 
     }
 

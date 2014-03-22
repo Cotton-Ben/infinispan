@@ -1,13 +1,10 @@
 package org.infinispan.offheap.util;
 
 import org.infinispan.commons.util.Immutables;
+import org.infinispan.container.DataContainer;
 import org.infinispan.container.entries.InternalCacheEntry;
+import org.infinispan.container.entries.InternalCacheValue;
 import org.infinispan.metadata.Metadata;
-import org.infinispan.offheap.container.OffHeapDataContainer;
-import org.infinispan.offheap.container.entries.OffHeapInternalCacheEntry;
-import org.infinispan.offheap.container.entries.OffHeapInternalCacheValue;
-import org.infinispan.offheap.metadata.OffHeapMetadata;
-import org.infinispan.util.CoreImmutables;
 
 import static org.infinispan.commons.util.Util.toStr;
 
@@ -17,18 +14,9 @@ import static org.infinispan.commons.util.Util.toStr;
  */
 public class OffHeapCoreImmutables extends Immutables {
 
-   /**
-    * Wraps a {@link org.infinispan.offheap.container.entries.OffHeapInternalCacheEntry}}
-    * with an immutable {@link org.infinispan.offheap.container.entries.OffHeapInternalCacheEntry}}.
-    * There is no copying involved.
-    *
-    *
-    * @param entry the internal cache entry to wrap.
-    * @return an immutable {@link org.infinispan.offheap.container.entries.OffHeapInternalCacheEntry}}
-    * wrapper that delegates to the original entry.
-    */
-   public static OffHeapInternalCacheEntry immutableInternalCacheEntry(OffHeapInternalCacheEntry entry) {
-      return (OffHeapInternalCacheEntry) new OffHeapImmutableInternalCacheEntry((OffHeapInternalCacheEntry) entry);
+
+   public static InternalCacheEntry immutableInternalCacheEntry(InternalCacheEntry entry) {
+      return (InternalCacheEntry) new OffHeapImmutableInternalCacheEntry((InternalCacheEntry) entry);
    }
 
    /*
@@ -40,11 +28,11 @@ public class OffHeapCoreImmutables extends Immutables {
    /**
     * Immutable version of InternalCacheEntry for traversing data containers.
     */
-   private static class OffHeapImmutableInternalCacheEntry implements OffHeapInternalCacheEntry, Immutable {
-      private final OffHeapInternalCacheEntry entry;
+   private static class OffHeapImmutableInternalCacheEntry implements InternalCacheEntry, Immutable {
+      private final InternalCacheEntry entry;
       private final int hash;
 
-      OffHeapImmutableInternalCacheEntry(OffHeapInternalCacheEntry entry) {
+      OffHeapImmutableInternalCacheEntry(InternalCacheEntry entry) {
          this.entry = entry;
          this.hash = entry.hashCode();
       }
@@ -65,7 +53,7 @@ public class OffHeapCoreImmutables extends Immutables {
       }
 
        @Override
-       public void commit(OffHeapDataContainer container, OffHeapMetadata metadata) {
+       public void commit(DataContainer container, Metadata metadata) {
 
        }
 
@@ -125,7 +113,7 @@ public class OffHeapCoreImmutables extends Immutables {
       }
 
       @Override
-      public OffHeapInternalCacheValue toInternalCacheValue() {
+      public InternalCacheValue toInternalCacheValue() {
          return new OffHeapCoreImmutables.OffHeapImmutableInternalCacheValue(this);
       }
 
@@ -155,7 +143,7 @@ public class OffHeapCoreImmutables extends Immutables {
       }
 
       @Override
-      public void setMetadata(OffHeapMetadata metadata) {
+      public void setMetadata(Metadata metadata) {
          throw new UnsupportedOperationException();
       }
 
@@ -250,17 +238,17 @@ public class OffHeapCoreImmutables extends Immutables {
       }
 
       @Override
-      public OffHeapMetadata getMetadata() {
+      public Metadata getMetadata() {
          return entry.getMetadata();
       }
 
       @Override
-      public OffHeapInternalCacheEntry clone() {
+      public InternalCacheEntry clone() {
          return new OffHeapImmutableInternalCacheEntry(entry.clone());
       }
    }
 
-   private static class OffHeapImmutableInternalCacheValue implements OffHeapInternalCacheValue, Immutable {
+   private static class OffHeapImmutableInternalCacheValue implements InternalCacheValue, Immutable {
       private final OffHeapImmutableInternalCacheEntry entry;
 
       OffHeapImmutableInternalCacheValue(OffHeapImmutableInternalCacheEntry entry) {
@@ -308,7 +296,7 @@ public class OffHeapCoreImmutables extends Immutables {
       }
 
       @Override
-      public OffHeapInternalCacheEntry toInternalCacheEntry(Object key) {
+      public InternalCacheEntry toInternalCacheEntry(Object key) {
          return entry;
       }
 
@@ -318,7 +306,7 @@ public class OffHeapCoreImmutables extends Immutables {
       }
 
       @Override
-      public OffHeapMetadata getMetadata() {
+      public Metadata getMetadata() {
          return entry.getMetadata();
       }
    }

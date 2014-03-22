@@ -8,8 +8,6 @@ import org.infinispan.container.entries.InternalCacheValue;
 import org.infinispan.marshall.core.Ids;
 import org.infinispan.metadata.EmbeddedMetadata;
 import org.infinispan.metadata.Metadata;
-import org.infinispan.offheap.metadata.OffHeapEmbeddedMetadata;
-import org.infinispan.offheap.metadata.OffHeapMetadata;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -99,7 +97,7 @@ public class OffHeapImmortalCacheEntry extends OffHeapAbstractInternalCacheEntry
    }
 
    @Override
-   public OffHeapInternalCacheValue toInternalCacheValue() {
+   public InternalCacheValue toInternalCacheValue() {
       return new OffHeapImmortalCacheValue(value);
    }
 
@@ -114,12 +112,12 @@ public class OffHeapImmortalCacheEntry extends OffHeapAbstractInternalCacheEntry
    }
 
    @Override
-   public OffHeapMetadata getMetadata() {
-      return new OffHeapEmbeddedMetadata.OffHeapBuilder().build();
+   public Metadata getMetadata() {
+      return new EmbeddedMetadata.Builder().build();
    }
 
    @Override
-   public void setMetadata(OffHeapMetadata metadata) {
+   public void setMetadata(Metadata metadata) {
       throw new IllegalStateException(
             "Metadata cannot be set on immortal entries. They need to be recreated via the entry factory.");
    }

@@ -64,10 +64,12 @@ public class OffHeapTransientMortalCacheValue extends OffHeapMortalCacheValue {
       return isExpired(System.currentTimeMillis());
    }
 
+    /*
    @Override
    public OffHeapInternalCacheEntry toInternalCacheEntry(Object key) {
       return new OffHeapTransientMortalCacheEntry(key, value, maxIdle, lifespan, lastUsed, created);
    }
+   */
 
    @Override
    public long getExpiryTime() {

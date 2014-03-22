@@ -3,11 +3,10 @@ package org.infinispan.offheap.container.entries;
 import org.infinispan.commons.io.UnsignedNumeric;
 import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.util.Util;
+import org.infinispan.container.entries.InternalCacheValue;
 import org.infinispan.marshall.core.Ids;
 import org.infinispan.metadata.EmbeddedMetadata;
 import org.infinispan.metadata.Metadata;
-import org.infinispan.offheap.metadata.OffHeapEmbeddedMetadata;
-import org.infinispan.offheap.metadata.OffHeapMetadata;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -98,7 +97,7 @@ public class OffHeapTransientMortalCacheEntry extends OffHeapAbstractInternalCac
 
 
    @Override
-   public OffHeapInternalCacheValue toInternalCacheValue() {
+   public InternalCacheValue toInternalCacheValue() {
       return new OffHeapTransientMortalCacheValue(value, created, lifespan, maxIdle, lastUsed);
    }
 
@@ -138,14 +137,14 @@ public class OffHeapTransientMortalCacheEntry extends OffHeapAbstractInternalCac
    }
 
    @Override
-   public OffHeapMetadata getMetadata() {
-      return new OffHeapEmbeddedMetadata.OffHeapBuilder()
+   public Metadata getMetadata() {
+      return new EmbeddedMetadata.Builder()
             .lifespan(lifespan)
             .maxIdle(maxIdle).build();
    }
 
    @Override
-   public void setMetadata(OffHeapMetadata metadata) {
+   public void setMetadata(Metadata metadata) {
       throw new IllegalStateException(
             "Metadata cannot be set on mortal entries. They need to be recreated via the entry factory.");
    }

@@ -3,9 +3,9 @@ package org.infinispan.offheap.container.entries;
 import org.infinispan.atomic.AtomicHashMap;
 import org.infinispan.commons.util.Util;
 import org.infinispan.container.DataContainer;
+import org.infinispan.container.entries.MVCCEntry;
+import org.infinispan.container.entries.StateChangingEntry;
 import org.infinispan.metadata.Metadata;
-import org.infinispan.offheap.container.OffHeapDataContainer;
-import org.infinispan.offheap.metadata.OffHeapMetadata;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
@@ -29,15 +29,15 @@ import static org.infinispan.offheap.container.entries.OffHeapReadCommittedEntry
  * @author peter.lawrey@higherfrequencytrading.com
  *
  */
-public abstract class OffHeapReadCommittedEntry implements OffHeapMVCCEntry {
+public abstract class OffHeapReadCommittedEntry implements MVCCEntry {
    private static final Log log = LogFactory.getLog(OffHeapReadCommittedEntry.class);
    private static final boolean trace = log.isTraceEnabled();
 
    protected Object key, value, oldValue;
    protected byte flags = 0;
-   protected OffHeapMetadata metadata;
+   protected Metadata metadata;
 
-   public OffHeapReadCommittedEntry(Object key, Object value, OffHeapMetadata metadata) {
+   public OffHeapReadCommittedEntry(Object key, Object value, Metadata metadata) {
       setValid(true);
       this.key = key;
       this.value = value;
@@ -50,7 +50,7 @@ public abstract class OffHeapReadCommittedEntry implements OffHeapMVCCEntry {
    }
 
    @Override
-   public void copyStateFlagsFrom(OffHeapStateChangingEntry other) {
+   public void copyStateFlagsFrom(StateChangingEntry other) {
       this.flags = other.getStateFlags();
    }
 
@@ -136,7 +136,7 @@ public abstract class OffHeapReadCommittedEntry implements OffHeapMVCCEntry {
    }
 
    @Override
-   public void copyForUpdate(OffHeapDataContainer container) {
+   public void copyForUpdate(DataContainer container) {
       if (isFlagSet(COPIED)) return; // already copied
 
       setFlag(COPIED); //mark as copied
@@ -146,7 +146,7 @@ public abstract class OffHeapReadCommittedEntry implements OffHeapMVCCEntry {
    }
 
    @Override
-   public final void commit(OffHeapDataContainer container, OffHeapMetadata providedMetadata) {
+   public final void commit(DataContainer container, Metadata providedMetadata) {
       // TODO: No tombstones for now!!  I'll only need them for an eventually consistent cache
 
       // only do stuff if there are changes.
@@ -225,12 +225,12 @@ public abstract class OffHeapReadCommittedEntry implements OffHeapMVCCEntry {
    }
 
    @Override
-   public OffHeapMetadata getMetadata() {
+   public Metadata getMetadata() {
       return metadata;
    }
 
    @Override
-   public void setMetadata(OffHeapMetadata metadata) {
+   public void setMetadata(Metadata metadata) {
       this.metadata = metadata;
    }
 

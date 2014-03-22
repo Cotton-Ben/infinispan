@@ -1,20 +1,18 @@
 package org.infinispan.offheap.container;
 
+import org.infinispan.container.EntryFactoryImpl;
+import org.infinispan.container.entries.CacheEntry;
+import org.infinispan.container.entries.MVCCEntry;
+import org.infinispan.container.versioning.VersionGenerator;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
 import org.infinispan.metadata.EmbeddedMetadata;
 import org.infinispan.metadata.Metadata;
+import org.infinispan.metadata.Metadatas;
 import org.infinispan.offheap.container.entries.OffHeapClusteredRepeatableReadEntry;
-import org.infinispan.offheap.context.OffHeapInvocationContext;
-import org.infinispan.offheap.metadata.OffHeapEmbeddedMetadata;
-import org.infinispan.offheap.metadata.OffHeapMetadatas;
-import org.infinispan.offheap.container.entries.OffHeapCacheEntry;
-import org.infinispan.offheap.container.entries.OffHeapMVCCEntry;
-import org.infinispan.offheap.container.versioning.OffHeapVersionGenerator;
-import org.infinispan.offheap.metadata.OffHeapMetadata;
-import org.infinispan.offheap.metadata.OffHeapMetadatas;
+
 
 /**
  * An entry factory that is capable of dealing with SimpleClusteredVersions.  This should <i>only</i> be used with
@@ -23,9 +21,9 @@ import org.infinispan.offheap.metadata.OffHeapMetadatas;
  * @author Manik Surtani
  * @since 5.1
  */
-public class OffHeapIncrementalVersionableEntryFactoryImpl extends OffHeapEntryFactoryImpl {
+public class OffHeapIncrementalVersionableEntryFactoryImpl extends EntryFactoryImpl {
 
-   private OffHeapVersionGenerator versionGenerator;
+   private VersionGenerator versionGenerator;
 
    @Start (priority = 9)
    public void setWriteSkewCheckFlag() {
@@ -33,26 +31,26 @@ public class OffHeapIncrementalVersionableEntryFactoryImpl extends OffHeapEntryF
    }
 
    @Inject
-   public void injectVersionGenerator(OffHeapVersionGenerator versionGenerator) {
+   public void injectVersionGenerator(VersionGenerator versionGenerator) {
       this.versionGenerator = versionGenerator;
    }
 
    @Override
-   protected OffHeapMVCCEntry createWrappedEntry(
+   protected MVCCEntry createWrappedEntry(
                                         Object key,
-                                        OffHeapCacheEntry cacheEntry,
-                                        OffHeapInvocationContext context,
-                                        OffHeapMetadata providedMetadata,
+                                        CacheEntry cacheEntry,
+                                        InvocationContext context,
+                                        Metadata providedMetadata,
                                         boolean isForInsert,
                                         boolean forRemoval,
                                         boolean skipRead) {
-      OffHeapMetadata metadata;
+      Metadata metadata;
       Object value;
       if (cacheEntry != null) {
          value = cacheEntry.getValue();
-         OffHeapMetadata entryMetadata = cacheEntry.getMetadata();
+         Metadata entryMetadata = cacheEntry.getMetadata();
          if (providedMetadata != null && entryMetadata != null) {
-            metadata = OffHeapMetadatas.applyVersion(entryMetadata, providedMetadata);
+            metadata = Metadatas.applyVersion(entryMetadata, providedMetadata);
          } else if (providedMetadata == null) {
             metadata = entryMetadata; // take the metadata in memory
          } else {
@@ -66,8 +64,8 @@ public class OffHeapIncrementalVersionableEntryFactoryImpl extends OffHeapEntryF
          }
       } else {
          value = null;
-         metadata = providedMetadata == null ? new OffHeapEmbeddedMetadata
-                                                            .OffHeapBuilder()
+         metadata = providedMetadata == null ? new EmbeddedMetadata
+                                                            .Builder()
                                                             .version(versionGenerator.nonExistingVersion())
                                                             .build()
                : providedMetadata;

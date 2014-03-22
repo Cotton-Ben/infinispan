@@ -3,13 +3,15 @@ package org.infinispan.offheap.container.entries;
 import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.util.Util;
 import org.infinispan.container.entries.ImmortalCacheValue;
+import org.infinispan.container.entries.InternalCacheEntry;
+import org.infinispan.container.entries.InternalCacheValue;
 import org.infinispan.marshall.core.Ids;
 import org.infinispan.metadata.EmbeddedMetadata;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.offheap.commons.marshall.OffHeapAbstractExternalizer;
 import org.infinispan.offheap.commons.util.concurrent.OffHeapUtil;
 import org.infinispan.offheap.metadata.OffHeapEmbeddedMetadata;
-import org.infinispan.offheap.metadata.OffHeapMetadata;
+
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -25,7 +27,7 @@ import java.util.Set;
  * @author dmitry.gordeev@jpmorgan.com
  * @author peter.lawrey@higherfrequencytrading.com
  */
-public class OffHeapImmortalCacheValue implements OffHeapInternalCacheValue, Cloneable {
+public class OffHeapImmortalCacheValue implements InternalCacheValue, Cloneable {
 
    public Object value;
 
@@ -34,8 +36,8 @@ public class OffHeapImmortalCacheValue implements OffHeapInternalCacheValue, Clo
    }
 
    @Override
-   public OffHeapInternalCacheEntry toInternalCacheEntry(Object key) {
-      return (OffHeapInternalCacheEntry) new OffHeapImmortalCacheEntry(key, value);
+   public InternalCacheEntry toInternalCacheEntry(Object key) {
+      return (InternalCacheEntry) new OffHeapImmortalCacheEntry(key, value);
    }
 
    public final Object setValue(Object value) {
@@ -90,7 +92,7 @@ public class OffHeapImmortalCacheValue implements OffHeapInternalCacheValue, Clo
    }
 
    @Override
-   public OffHeapMetadata getMetadata() {
+   public Metadata getMetadata() {
       return new OffHeapEmbeddedMetadata.OffHeapBuilder()
               .lifespan(getLifespan())
               .maxIdle(getMaxIdle())

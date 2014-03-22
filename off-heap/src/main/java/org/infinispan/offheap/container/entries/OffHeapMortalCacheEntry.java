@@ -5,11 +5,10 @@ import net.openhft.lang.io.serialization.BytesMarshallable;
 import org.infinispan.commons.io.UnsignedNumeric;
 import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.util.Util;
+import org.infinispan.container.entries.InternalCacheValue;
 import org.infinispan.marshall.core.Ids;
 import org.infinispan.metadata.EmbeddedMetadata;
 import org.infinispan.metadata.Metadata;
-import org.infinispan.offheap.metadata.OffHeapEmbeddedMetadata;
-import org.infinispan.offheap.metadata.OffHeapMetadata;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -118,17 +117,17 @@ public class OffHeapMortalCacheEntry
    }
 
    @Override
-   public OffHeapInternalCacheValue toInternalCacheValue() {
+   public InternalCacheValue toInternalCacheValue() {
       return new OffHeapMortalCacheValue(value, created, lifespan);
    }
 
    @Override
-   public OffHeapMetadata getMetadata() {
-      return new OffHeapEmbeddedMetadata.OffHeapBuilder().lifespan(lifespan).build();
+   public Metadata getMetadata() {
+      return new EmbeddedMetadata.Builder().lifespan(lifespan).build();
    }
 
    @Override
-   public void setMetadata(OffHeapMetadata metadata) {
+   public void setMetadata(Metadata metadata) {
       throw new IllegalStateException(
             "Metadata cannot be set on mortal entries. They need to be recreated via the entry factory.");
    }

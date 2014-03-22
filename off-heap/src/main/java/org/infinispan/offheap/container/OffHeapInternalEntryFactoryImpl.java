@@ -1,14 +1,17 @@
 package org.infinispan.offheap.container;
 
-import org.infinispan.offheap.container.entries.OffHeapInternalCacheEntry;
+import org.infinispan.container.InternalEntryFactory;
+import org.infinispan.container.entries.*;
+import org.infinispan.container.entries.metadata.MetadataImmortalCacheEntry;
+import org.infinispan.container.entries.metadata.MetadataMortalCacheEntry;
+import org.infinispan.container.entries.metadata.MetadataTransientCacheEntry;
+import org.infinispan.container.entries.metadata.MetadataTransientMortalCacheEntry;
+import org.infinispan.container.versioning.EntryVersion;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.metadata.EmbeddedMetadata;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.offheap.container.entries.*;
 import org.infinispan.offheap.container.entries.metadata.*;
-import org.infinispan.offheap.container.versioning.OffHeapEntryVersion;
-import org.infinispan.offheap.metadata.OffHeapEmbeddedMetadata;
-import org.infinispan.offheap.metadata.OffHeapMetadata;
 import org.infinispan.util.TimeService;
 
 /**
@@ -17,7 +20,7 @@ import org.infinispan.util.TimeService;
  * @author Manik Surtani
  * @since 5.1
  */
-public class OffHeapInternalEntryFactoryImpl implements OffHeapInternalEntryFactory {
+public class OffHeapInternalEntryFactoryImpl implements InternalEntryFactory {
 
    private TimeService timeService;
 
@@ -27,7 +30,7 @@ public class OffHeapInternalEntryFactoryImpl implements OffHeapInternalEntryFact
    }
 
    @Override
-   public OffHeapInternalCacheEntry create(Object key, Object value, OffHeapMetadata metadata) {
+   public InternalCacheEntry create(Object key, Object value, Metadata metadata) {
       long lifespan = metadata != null ? metadata.lifespan() : -1;
       long maxIdle = metadata != null ? metadata.maxIdle() : -1;
       if (!isStoreMetadata(metadata)) {
@@ -44,7 +47,7 @@ public class OffHeapInternalEntryFactoryImpl implements OffHeapInternalEntryFact
    }
 
    @Override
-   public OffHeapInternalCacheEntry create(OffHeapCacheEntry cacheEntry) {
+   public InternalCacheEntry create(CacheEntry cacheEntry) {
       return create(
                 cacheEntry.getKey(),
                 cacheEntry.getValue(),
@@ -55,7 +58,7 @@ public class OffHeapInternalEntryFactoryImpl implements OffHeapInternalEntryFact
    }
 
    @Override
-   public OffHeapInternalCacheEntry create(Object key, Object value, OffHeapInternalCacheEntry cacheEntry) {
+   public InternalCacheEntry create(Object key, Object value, InternalCacheEntry cacheEntry) {
       return create(key, value, cacheEntry.getMetadata(), cacheEntry.getCreated(),
             cacheEntry.getLifespan(), cacheEntry.getLastUsed(), cacheEntry.getMaxIdle());
    }
@@ -64,49 +67,49 @@ public class OffHeapInternalEntryFactoryImpl implements OffHeapInternalEntryFact
 
 
     @Override
-   public OffHeapInternalCacheEntry create(Object key, Object value, OffHeapEntryVersion version, long created, long lifespan, long lastUsed, long maxIdle) {
+   public InternalCacheEntry create(Object key, Object value, EntryVersion version, long created, long lifespan, long lastUsed, long maxIdle) {
       if (version == null) {
-         if (lifespan < 0 && maxIdle < 0) return new OffHeapImmortalCacheEntry(key, value);
-         if (lifespan > -1 && maxIdle < 0) return new OffHeapMortalCacheEntry(key, value, lifespan, created);
-         if (lifespan < 0 && maxIdle > -1) return new OffHeapTransientCacheEntry(key, value, maxIdle, lastUsed);
-         return new OffHeapTransientMortalCacheEntry(key, value, maxIdle, lifespan, lastUsed, created);
+         if (lifespan < 0 && maxIdle < 0) return new ImmortalCacheEntry(key, value);
+         if (lifespan > -1 && maxIdle < 0) return new MortalCacheEntry(key, value, lifespan, created);
+         if (lifespan < 0 && maxIdle > -1) return new TransientCacheEntry(key, value, maxIdle, lastUsed);
+         return new TransientMortalCacheEntry(key, value, maxIdle, lifespan, lastUsed, created);
       } else {
          // If no metadata passed, assumed embedded metadata
-         OffHeapMetadata metadata = new OffHeapEmbeddedMetadata.OffHeapBuilder()
+         Metadata metadata = new EmbeddedMetadata.Builder()
                                         .lifespan(lifespan)
                                         .maxIdle(maxIdle)
                                         .version(version)
                                         .build();
 
-         if (lifespan < 0 && maxIdle < 0) return new OffHeapMetadataImmortalCacheEntry(key, value, metadata);
-         if (lifespan > -1 && maxIdle < 0) return new OffHeapMetadataMortalCacheEntry(key, value, metadata, created);
-         if (lifespan < 0 && maxIdle > -1) return new OffHeapMetadataTransientCacheEntry(key, value, metadata, lastUsed);
-         return new OffHeapMetadataTransientMortalCacheEntry(key, value, metadata, lastUsed, created);
+         if (lifespan < 0 && maxIdle < 0) return new MetadataImmortalCacheEntry(key, value, metadata);
+         if (lifespan > -1 && maxIdle < 0) return new MetadataMortalCacheEntry(key, value, metadata, created);
+         if (lifespan < 0 && maxIdle > -1) return new MetadataTransientCacheEntry(key, value, metadata, lastUsed);
+         return new MetadataTransientMortalCacheEntry(key, value, metadata, lastUsed, created);
       }
    }
 
 
     @Override
-   public OffHeapInternalCacheEntry create(Object key, Object value, OffHeapMetadata metadata, long created, long lifespan, long lastUsed, long maxIdle) {
+   public InternalCacheEntry create(Object key, Object value, Metadata metadata, long created, long lifespan, long lastUsed, long maxIdle) {
       if (!isStoreMetadata(metadata)) {
-         if (lifespan < 0 && maxIdle < 0) return new OffHeapImmortalCacheEntry(key, value);
-         if (lifespan > -1 && maxIdle < 0) return new OffHeapMortalCacheEntry(key, value, lifespan, created);
-         if (lifespan < 0 && maxIdle > -1) return new OffHeapTransientCacheEntry(key, value, maxIdle, lastUsed);
-         return new OffHeapTransientMortalCacheEntry(key, value, maxIdle, lifespan, lastUsed, created);
+         if (lifespan < 0 && maxIdle < 0) return new ImmortalCacheEntry(key, value);
+         if (lifespan > -1 && maxIdle < 0) return new MortalCacheEntry(key, value, lifespan, created);
+         if (lifespan < 0 && maxIdle > -1) return new TransientCacheEntry(key, value, maxIdle, lastUsed);
+         return new TransientMortalCacheEntry(key, value, maxIdle, lifespan, lastUsed, created);
       } else {
          // Metadata to store, take lifespan and maxIdle settings from it
          long metaLifespan = metadata.lifespan();
          long metaMaxIdle = metadata.maxIdle();
-         if (metaLifespan < 0 && metaMaxIdle < 0) return new OffHeapMetadataImmortalCacheEntry(key, value, metadata);
-         if (metaLifespan > -1 && metaMaxIdle < 0) return new OffHeapMetadataMortalCacheEntry(key, value, metadata, created);
-         if (metaLifespan < 0 && metaMaxIdle > -1) return new OffHeapMetadataTransientCacheEntry(key, value, metadata, lastUsed);
+         if (metaLifespan < 0 && metaMaxIdle < 0) return new MetadataImmortalCacheEntry(key, value, metadata);
+         if (metaLifespan > -1 && metaMaxIdle < 0) return new MetadataMortalCacheEntry(key, value, metadata, created);
+         if (metaLifespan < 0 && metaMaxIdle > -1) return new MetadataTransientCacheEntry(key, value, metadata, lastUsed);
          return new OffHeapMetadataTransientMortalCacheEntry(key, value, metadata, lastUsed, created);
       }
    }
 
    @Override
-   public OffHeapInternalCacheValue createValue(OffHeapCacheEntry cacheEntry) {
-      OffHeapMetadata metadata = cacheEntry.getMetadata();
+   public InternalCacheValue createValue(CacheEntry cacheEntry) {
+      Metadata metadata = cacheEntry.getMetadata();
       long lifespan = cacheEntry.getLifespan();
       long maxIdle = cacheEntry.getMaxIdle();
       if (!isStoreMetadata(metadata)) {
@@ -124,7 +127,7 @@ public class OffHeapInternalEntryFactoryImpl implements OffHeapInternalEntryFact
 
    @Override
    // TODO: Do we need this???
-   public OffHeapInternalCacheEntry create(Object key, Object value, OffHeapMetadata metadata, long lifespan, long maxIdle) {
+   public InternalCacheEntry create(Object key, Object value, Metadata metadata, long lifespan, long maxIdle) {
       if (!isStoreMetadata(metadata)) {
          if (lifespan < 0 && maxIdle < 0) return new OffHeapImmortalCacheEntry(key, value);
          if (lifespan > -1 && maxIdle < 0) return new OffHeapMortalCacheEntry(key, value, lifespan, timeService.wallClockTime());
@@ -143,14 +146,14 @@ public class OffHeapInternalEntryFactoryImpl implements OffHeapInternalEntryFact
 
 
    @Override
-   public OffHeapInternalCacheEntry update(OffHeapInternalCacheEntry ice, OffHeapMetadata metadata) {
+   public InternalCacheEntry update(InternalCacheEntry ice, Metadata metadata) {
       if (!isStoreMetadata(metadata))
          return updateMetadataUnawareEntry(ice, metadata.lifespan(), metadata.maxIdle());
       else
          return updateMetadataAwareEntry(ice, metadata);
    }
 
-   private OffHeapInternalCacheEntry updateMetadataUnawareEntry(OffHeapInternalCacheEntry ice, long lifespan, long maxIdle) {
+   private InternalCacheEntry updateMetadataUnawareEntry(InternalCacheEntry ice, long lifespan, long maxIdle) {
       if (ice instanceof OffHeapImmortalCacheEntry) {
          if (lifespan < 0) {
             if (maxIdle < 0) {
@@ -219,10 +222,10 @@ public class OffHeapInternalEntryFactoryImpl implements OffHeapInternalEntryFact
       return ice;
    }
 
-   private OffHeapInternalCacheEntry updateMetadataAwareEntry(OffHeapInternalCacheEntry ice, OffHeapMetadata metadata) {
+   private InternalCacheEntry updateMetadataAwareEntry(InternalCacheEntry ice, Metadata metadata) {
       long lifespan = metadata.lifespan();
       long maxIdle = metadata.maxIdle();
-      if (ice instanceof OffHeapMetadataImmortalCacheEntry) {
+      if (ice instanceof MetadataImmortalCacheEntry) {
          if (lifespan < 0) {
             if (maxIdle < 0) {
                ice.setMetadata(metadata);
@@ -238,7 +241,7 @@ public class OffHeapInternalEntryFactoryImpl implements OffHeapInternalEntryFact
                return new OffHeapMetadataTransientMortalCacheEntry(ice.getKey(), ice.getValue(), metadata, ctm, ctm);
             }
          }
-      } else if (ice instanceof OffHeapMetadataMortalCacheEntry) {
+      } else if (ice instanceof MetadataMortalCacheEntry) {
          if (lifespan < 0) {
             if (maxIdle < 0) {
                return new OffHeapMetadataImmortalCacheEntry(ice.getKey(), ice.getValue(), metadata);
@@ -254,7 +257,7 @@ public class OffHeapInternalEntryFactoryImpl implements OffHeapInternalEntryFact
                return new OffHeapMetadataTransientMortalCacheEntry(ice.getKey(), ice.getValue(), metadata, ctm, ctm);
             }
          }
-      } else if (ice instanceof OffHeapMetadataTransientCacheEntry) {
+      } else if (ice instanceof MetadataTransientCacheEntry) {
          if (lifespan < 0) {
             if (maxIdle < 0) {
                return new OffHeapMetadataImmortalCacheEntry(ice.getKey(), ice.getValue(), metadata);
@@ -270,7 +273,7 @@ public class OffHeapInternalEntryFactoryImpl implements OffHeapInternalEntryFact
                return new OffHeapMetadataTransientMortalCacheEntry(ice.getKey(), ice.getValue(), metadata, ctm, ctm);
             }
          }
-      } else if (ice instanceof OffHeapMetadataTransientMortalCacheEntry) {
+      } else if (ice instanceof MetadataTransientMortalCacheEntry) {
          if (lifespan < 0) {
             if (maxIdle < 0) {
                return new OffHeapMetadataImmortalCacheEntry(ice.getKey(), ice.getValue(), metadata);
@@ -300,7 +303,7 @@ public class OffHeapInternalEntryFactoryImpl implements OffHeapInternalEntryFact
     * @return true if the entire metadata object needs to be stored, otherwise
     * simply store lifespan and/or maxIdle in existing cache entries
     */
-   private boolean isStoreMetadata(OffHeapMetadata metadata) {
+   private boolean isStoreMetadata(Metadata metadata) {
       return metadata != null
             && (metadata.version() != null
                       || !(metadata instanceof EmbeddedMetadata));

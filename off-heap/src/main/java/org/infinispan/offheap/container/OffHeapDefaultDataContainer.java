@@ -2,25 +2,23 @@ package org.infinispan.offheap.container;
 
 import net.jcip.annotations.ThreadSafe;
 import net.openhft.collections.SharedHashMapBuilder;
-import org.infinispan.commons.equivalence.Equivalence;
+
 import org.infinispan.commons.logging.Log;
 import org.infinispan.commons.logging.LogFactory;
-import org.infinispan.commons.util.CollectionFactory;
+
 import org.infinispan.commons.util.concurrent.ParallelIterableMap;
+import org.infinispan.container.DataContainer;
+import org.infinispan.container.InternalEntryFactory;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.eviction.*;
 import org.infinispan.factories.annotations.Inject;
+import org.infinispan.metadata.Metadata;
 import org.infinispan.offheap.BondVOInterface;
-import org.infinispan.offheap.container.entries.OffHeapInternalCacheEntry;
-import org.infinispan.offheap.metadata.OffHeapMetadata;
-import org.infinispan.offheap.util.concurrent.OffHeapParallelIterableMap;
 import org.infinispan.persistence.manager.PersistenceManager;
 import org.infinispan.persistence.spi.AdvancedCacheLoader;
 import org.infinispan.offheap.util.OffHeapCoreImmutables;
 import org.infinispan.util.CoreImmutables;
 import org.infinispan.util.TimeService;
-import org.infinispan.util.concurrent.BoundedConcurrentHashMap;
-import org.infinispan.util.concurrent.BoundedConcurrentHashMap.Eviction;
 import org.infinispan.util.concurrent.BoundedConcurrentHashMap.EvictionListener;
 
 import java.io.File;
@@ -35,13 +33,13 @@ import java.util.concurrent.ConcurrentMap;
  * @author peter.lawrey@higherfrequencytrading.com
  */
 @ThreadSafe
-public class OffHeapDefaultDataContainer implements OffHeapDataContainer {
+public class OffHeapDefaultDataContainer implements DataContainer {
 
    private static final Log log = LogFactory.getLog(OffHeapDefaultDataContainer.class);
    private static final boolean trace = log.isTraceEnabled();
 
-   protected ConcurrentMap<Object, OffHeapInternalCacheEntry> entries;
-   protected OffHeapInternalEntryFactory entryFactory;
+   protected ConcurrentMap<Object, InternalCacheEntry> entries;
+   protected InternalEntryFactory entryFactory;
    protected DefaultEvictionListener evictionListener;
    private EvictionManager evictionManager;
    private PassivationManager passivator;
@@ -62,7 +60,7 @@ public class OffHeapDefaultDataContainer implements OffHeapDataContainer {
                    .entrySize(entrysSize)
                    .minSegments(segmentsSize)
                    .create(
-                           new File("/dev/shm/" + bondVOOperand + ".@t=" + t),
+                           new File("c:\\workspace\\" + bondVOOperand + ".@t=" + t),
                            String.class,
                            BondVOInterface.class
                    );
@@ -85,22 +83,23 @@ public class OffHeapDefaultDataContainer implements OffHeapDataContainer {
 
 //    public OffHeapDefaultDataContainer(int concurrencyLevel) {
 //    }
-//
-//   @Inject
-//   public void initialize(
-//                EvictionManager evictionManager,
-//                PassivationManager passivator,
-//                OffHeapInternalEntryFactory entryFactory,
-//                ActivationManager activator,
-//                PersistenceManager clm,
-//                TimeService timeService) {
-//      this.evictionManager = evictionManager;
-//      this.passivator = passivator;
-//      this.entryFactory = entryFactory;
-//      this.activator = activator;
-//      this.pm = clm;
-//      this.timeService = timeService;
-//   }
+/*
+   @Inject
+   public void initialize(
+                EvictionManager evictionManager,
+                PassivationManager passivator,
+                InternalEntryFactory entryFactory,
+                ActivationManager activator,
+                PersistenceManager clm,
+                TimeService timeService) {
+      this.evictionManager = evictionManager;
+      this.passivator = passivator;
+      this.entryFactory = entryFactory;
+      this.activator = activator;
+      this.pm = clm;
+      this.timeService = timeService;
+   }
+   */
 
 //   public static OffHeapDataContainer boundedDataContainer(int concurrencyLevel, int maxEntries,
 //            EvictionStrategy strategy, EvictionThreadPolicy policy,
@@ -119,15 +118,15 @@ public class OffHeapDefaultDataContainer implements OffHeapDataContainer {
 //   }
 
    //@Override
-   public OffHeapInternalCacheEntry peek(Object key) {
+   public InternalCacheEntry peek(Object key) {
       return entries.get(key);
    }
 
 
 
     @Override
-   public OffHeapInternalCacheEntry get(Object k) {
-      OffHeapInternalCacheEntry e = peek(k);
+   public InternalCacheEntry get(Object k) {
+      InternalCacheEntry e = peek(k);
       if (e != null && e.canExpire()) {
          long currentTimeMillis = timeService.wallClockTime();
          if (e.isExpired(currentTimeMillis)) {
@@ -141,11 +140,11 @@ public class OffHeapDefaultDataContainer implements OffHeapDataContainer {
    }
 
    @Override
-   public void put(Object k, Object v, OffHeapMetadata metadata) {
-      OffHeapInternalCacheEntry e = entries.get(k);
+   public void put(Object k, Object v, Metadata metadata) {
+      InternalCacheEntry e = entries.get(k);
       if (e != null) {
          e.setValue(v);
-         OffHeapInternalCacheEntry original = e;
+         InternalCacheEntry original = e;
          e = entryFactory.update(e, metadata);
          // we have the same instance. So we need to reincarnate, if mortal.
          if (isMortalEntry(e) && original == e) {
@@ -162,13 +161,13 @@ public class OffHeapDefaultDataContainer implements OffHeapDataContainer {
       entries.put(k, e);
    }
 
-   private boolean isMortalEntry(OffHeapInternalCacheEntry e) {
+   private boolean isMortalEntry(InternalCacheEntry e) {
       return e.getLifespan() > 0;
    }
 
    @Override
    public boolean containsKey(Object k) {
-      OffHeapInternalCacheEntry ice = peek(k);
+      InternalCacheEntry ice = peek(k);
       if (ice != null && ice.canExpire() && ice.isExpired(timeService.wallClockTime())) {
          entries.remove(k);
          ice = null;
@@ -177,8 +176,8 @@ public class OffHeapDefaultDataContainer implements OffHeapDataContainer {
    }
 
    @Override
-   public OffHeapInternalCacheEntry remove(Object k) {
-      OffHeapInternalCacheEntry e = entries.remove(k);
+   public InternalCacheEntry remove(Object k) {
+      InternalCacheEntry e = entries.remove(k);
       return e == null || (e.canExpire() && e.isExpired(timeService.wallClockTime())) ? null : e;
    }
 
@@ -203,15 +202,15 @@ public class OffHeapDefaultDataContainer implements OffHeapDataContainer {
    }
 
    @Override
-   public Set<OffHeapInternalCacheEntry> entrySet() {
+   public Set<InternalCacheEntry> entrySet() {
       return new EntrySet();
    }
 
    @Override
    public void purgeExpired() {
       long currentTimeMillis = timeService.wallClockTime();
-      for (Iterator<OffHeapInternalCacheEntry> purgeCandidates = entries.values().iterator(); purgeCandidates.hasNext();) {
-         OffHeapInternalCacheEntry e = purgeCandidates.next();
+      for (Iterator<InternalCacheEntry> purgeCandidates = entries.values().iterator(); purgeCandidates.hasNext();) {
+         InternalCacheEntry e = purgeCandidates.next();
          if (e.isExpired(currentTimeMillis)) {
             purgeCandidates.remove();
          }
@@ -251,24 +250,24 @@ public class OffHeapDefaultDataContainer implements OffHeapDataContainer {
    }
 
    private static class ImmutableEntryIterator extends EntryIterator {
-      ImmutableEntryIterator(Iterator<OffHeapInternalCacheEntry> it){
+      ImmutableEntryIterator(Iterator<InternalCacheEntry> it){
          super(it);
       }
 
       @Override
-      public OffHeapInternalCacheEntry next() {
-         return OffHeapCoreImmutables.immutableInternalCacheEntry(super.next());
+      public InternalCacheEntry next() {
+         return CoreImmutables.immutableInternalCacheEntry(super.next());
    }
    }
 
-   public static class EntryIterator implements Iterator<OffHeapInternalCacheEntry> {
+   public static class EntryIterator implements Iterator<InternalCacheEntry> {
 
-      private final Iterator<OffHeapInternalCacheEntry> it;
+      private final Iterator<InternalCacheEntry> it;
 
-      EntryIterator(Iterator<OffHeapInternalCacheEntry> it){this.it=it;}
+      EntryIterator(Iterator<InternalCacheEntry> it){this.it=it;}
 
       @Override
-      public OffHeapInternalCacheEntry next() {
+      public InternalCacheEntry next() {
          return it.next();
       }
 
@@ -287,7 +286,7 @@ public class OffHeapDefaultDataContainer implements OffHeapDataContainer {
     * Minimal implementation needed for unmodifiable Set
     *
     */
-   private class EntrySet extends AbstractSet<OffHeapInternalCacheEntry> {
+   private class EntrySet extends AbstractSet<InternalCacheEntry> {
 
       @Override
       public boolean contains(Object o) {
@@ -297,7 +296,7 @@ public class OffHeapDefaultDataContainer implements OffHeapDataContainer {
 
          @SuppressWarnings("rawtypes")
          Map.Entry e = (Map.Entry) o;
-         OffHeapInternalCacheEntry ice = entries.get(e.getKey());
+         InternalCacheEntry ice = entries.get(e.getKey());
          if (ice == null) {
             return false;
          }
@@ -305,7 +304,7 @@ public class OffHeapDefaultDataContainer implements OffHeapDataContainer {
       }
 
       @Override
-      public Iterator<OffHeapInternalCacheEntry> iterator() {
+      public Iterator<InternalCacheEntry> iterator() {
          return new ImmutableEntryIterator(entries.values().iterator());
       }
 
@@ -337,9 +336,9 @@ public class OffHeapDefaultDataContainer implements OffHeapDataContainer {
    }
 
    private static class ValueIterator implements Iterator<Object> {
-      Iterator<OffHeapInternalCacheEntry> currentIterator;
+      Iterator<InternalCacheEntry> currentIterator;
 
-      private ValueIterator(Iterator<OffHeapInternalCacheEntry> it) {
+      private ValueIterator(Iterator<InternalCacheEntry> it) {
          currentIterator = it;
       }
 
@@ -362,20 +361,20 @@ public class OffHeapDefaultDataContainer implements OffHeapDataContainer {
    @Override
    public <K> void executeTask(
            final AdvancedCacheLoader.KeyFilter<K> filter,
-           final ParallelIterableMap.KeyValueAction<Object, OffHeapInternalCacheEntry> action
+           final ParallelIterableMap.KeyValueAction<Object, InternalCacheEntry> action
    ) throws InterruptedException{
       if (filter == null)
          throw new IllegalArgumentException("No filter specified");
       if (action == null)
          throw new IllegalArgumentException("No action specified");
 
-      OffHeapParallelIterableMap<Object, OffHeapInternalCacheEntry> map =
-              (OffHeapParallelIterableMap<Object, OffHeapInternalCacheEntry>) entries;
+      ParallelIterableMap<Object, InternalCacheEntry> map =
+              (ParallelIterableMap<Object, InternalCacheEntry>) entries;
 
-       map.forEach(512, new OffHeapParallelIterableMap.KeyValueAction<Object, OffHeapInternalCacheEntry>() {
+       map.forEach(512, new ParallelIterableMap.KeyValueAction<Object, InternalCacheEntry>() {
 
            @Override
-           public void apply(Object o, OffHeapInternalCacheEntry internalCacheEntry) {
+           public void apply(Object o, InternalCacheEntry internalCacheEntry) {
 
            }
 
@@ -393,8 +392,8 @@ public class OffHeapDefaultDataContainer implements OffHeapDataContainer {
       }
    }
 
-    @Override
-    public void initialize(Object o, Object o1, OffHeapInternalEntryFactoryImpl internalEntryFactory, Object o2, Object o3, TimeService timeService) {
 
+    public void initialize(Object o, Object o1, OffHeapInternalEntryFactoryImpl internalEntryFactory, Object o2, Object o3, TimeService timeService) {
+        System.out.println("initialize");
     }
 }

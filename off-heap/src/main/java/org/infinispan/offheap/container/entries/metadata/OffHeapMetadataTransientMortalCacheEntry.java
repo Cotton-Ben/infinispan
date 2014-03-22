@@ -2,13 +2,14 @@ package org.infinispan.offheap.container.entries.metadata;
 
 import org.infinispan.commons.io.UnsignedNumeric;
 import org.infinispan.commons.marshall.AbstractExternalizer;
-import org.infinispan.offheap.commons.marshall.OffHeapAbstractExternalizer;
+import org.infinispan.container.entries.InternalCacheValue;
+import org.infinispan.container.entries.metadata.MetadataAware;
+import org.infinispan.metadata.Metadata;
 import org.infinispan.offheap.commons.util.concurrent.OffHeapUtil;
 import org.infinispan.offheap.marshall.core.OffHeapIds;
-import org.infinispan.offheap.metadata.OffHeapMetadata;
 import org.infinispan.offheap.container.entries.OffHeapAbstractInternalCacheEntry;
 import org.infinispan.offheap.container.entries.OffHeapExpiryHelper;
-import org.infinispan.offheap.container.entries.OffHeapInternalCacheValue;
+
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -18,8 +19,6 @@ import java.util.Set;
 import static java.lang.Math.min;
 
 /**
- * A form of {@link org.infinispan.offheap.container.entries.OffHeapTransientMortalCacheEntry}
- * that is {@link org.infinispan.offheap.container.entries.versioned.OffHeapVersioned}
  *
  * @author Manik Surtani
  * @since 5.1
@@ -28,18 +27,18 @@ import static java.lang.Math.min;
  * @author peter.lawrey@higherfrequencytrading.com
  *
  */
-public class OffHeapMetadataTransientMortalCacheEntry extends OffHeapAbstractInternalCacheEntry implements OffHeapMetadataAware {
+public class OffHeapMetadataTransientMortalCacheEntry extends OffHeapAbstractInternalCacheEntry implements MetadataAware {
 
    Object value;
-   OffHeapMetadata metadata;
+   Metadata metadata;
    long created;
    long lastUsed;
 
-   public OffHeapMetadataTransientMortalCacheEntry(Object key, Object value, OffHeapMetadata metadata, long now) {
+   public OffHeapMetadataTransientMortalCacheEntry(Object key, Object value, Metadata metadata, long now) {
       this(key, value, metadata, now, now);
    }
 
-   public OffHeapMetadataTransientMortalCacheEntry(Object key, Object value, OffHeapMetadata metadata, long lastUsed, long created) {
+   public OffHeapMetadataTransientMortalCacheEntry(Object key, Object value, Metadata metadata, long lastUsed, long created) {
       super(key);
       this.value = value;
       this.metadata = metadata;
@@ -90,7 +89,7 @@ public class OffHeapMetadataTransientMortalCacheEntry extends OffHeapAbstractInt
    }
 
    @Override
-   public OffHeapInternalCacheValue toInternalCacheValue() {
+   public InternalCacheValue toInternalCacheValue() {
       return new OffHeapMetadataTransientMortalCacheValue(value, metadata, created, lastUsed);
    }
 
@@ -130,12 +129,12 @@ public class OffHeapMetadataTransientMortalCacheEntry extends OffHeapAbstractInt
    }
 
    @Override
-   public OffHeapMetadata getMetadata() {
+   public Metadata getMetadata() {
       return metadata;
    }
 
    @Override
-   public void setMetadata(OffHeapMetadata metadata) {
+   public void setMetadata(Metadata metadata) {
       this.metadata = metadata;
    }
 
@@ -153,7 +152,7 @@ public class OffHeapMetadataTransientMortalCacheEntry extends OffHeapAbstractInt
       public OffHeapMetadataTransientMortalCacheEntry readObject(ObjectInput input) throws IOException, ClassNotFoundException {
          Object k = input.readObject();
          Object v = input.readObject();
-         OffHeapMetadata metadata = (OffHeapMetadata) input.readObject();
+         Metadata metadata = (Metadata) input.readObject();
          long created = UnsignedNumeric.readUnsignedLong(input);
          long lastUsed = UnsignedNumeric.readUnsignedLong(input);
          return new OffHeapMetadataTransientMortalCacheEntry(k, v, metadata, lastUsed, created);

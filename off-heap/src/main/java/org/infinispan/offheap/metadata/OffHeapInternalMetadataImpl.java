@@ -1,10 +1,14 @@
 package org.infinispan.offheap.metadata;
 
 import org.infinispan.container.entries.InternalCacheEntry;
+import org.infinispan.container.versioning.EntryVersion;
 import org.infinispan.marshall.core.Ids;
+import org.infinispan.metadata.EmbeddedMetadata;
+import org.infinispan.metadata.InternalMetadata;
+import org.infinispan.metadata.Metadata;
 import org.infinispan.offheap.commons.marshall.OffHeapAbstractExternalizer;
 import org.infinispan.offheap.commons.util.concurrent.OffHeapUtil;
-import org.infinispan.offheap.container.versioning.OffHeapEntryVersion;
+
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -17,8 +21,8 @@ import static java.lang.Math.min;
  * @author Mircea Markus
  * @since 6.0
  */
-public class OffHeapInternalMetadataImpl implements OffHeapInternalMetadata {
-   private final OffHeapMetadata actual;
+public class OffHeapInternalMetadataImpl implements InternalMetadata {
+   private final Metadata actual;
    private final long created;
    private final long lastUsed;
 
@@ -28,10 +32,10 @@ public class OffHeapInternalMetadataImpl implements OffHeapInternalMetadata {
    }
 
    public OffHeapInternalMetadataImpl(InternalCacheEntry ice) {
-      this((OffHeapMetadata) ice.getMetadata(), ice.getCreated(), ice.getLastUsed());
+      this((Metadata) ice.getMetadata(), ice.getCreated(), ice.getLastUsed());
    }
 
-   public OffHeapInternalMetadataImpl(OffHeapMetadata actual, long created, long lastUsed) {
+   public OffHeapInternalMetadataImpl(Metadata actual, long created, long lastUsed) {
       this.actual = extractMetadata(actual);
       this.created = created;
       this.lastUsed = lastUsed;
@@ -48,14 +52,16 @@ public class OffHeapInternalMetadataImpl implements OffHeapInternalMetadata {
    }
 
    @Override
-   public OffHeapEntryVersion version() {
+   public EntryVersion version() {
       return actual.version();
    }
 
+
    @Override
-   public OffHeapEmbeddedMetadata.OffHeapBuilder builder() {
-      return actual.builder();
+   public Metadata.Builder builder() {
+        return actual.builder();
    }
+
 
    @Override
    public long created() {
@@ -67,7 +73,7 @@ public class OffHeapInternalMetadataImpl implements OffHeapInternalMetadata {
       return lastUsed;
    }
 
-   public OffHeapMetadata actual() {
+   public Metadata actual() {
       return actual;
    }
 
@@ -119,8 +125,8 @@ public class OffHeapInternalMetadataImpl implements OffHeapInternalMetadata {
             '}';
    }
 
-   private static OffHeapMetadata extractMetadata(OffHeapMetadata metadata) {
-      OffHeapMetadata toCheck = metadata;
+   private static Metadata extractMetadata(Metadata metadata) {
+      Metadata toCheck = metadata;
       while (toCheck != null) {
          if (toCheck instanceof OffHeapInternalMetadataImpl) {
             toCheck = ((OffHeapInternalMetadataImpl) toCheck).actual();
@@ -149,7 +155,7 @@ public class OffHeapInternalMetadataImpl implements OffHeapInternalMetadata {
       public OffHeapInternalMetadataImpl readObject(ObjectInput input) throws IOException, ClassNotFoundException {
          long created = input.readLong();
          long lastUsed = input.readLong();
-         OffHeapMetadata actual = (OffHeapMetadata) input.readObject();
+         Metadata actual = (Metadata) input.readObject();
          return new OffHeapInternalMetadataImpl(actual, created, lastUsed);
       }
 

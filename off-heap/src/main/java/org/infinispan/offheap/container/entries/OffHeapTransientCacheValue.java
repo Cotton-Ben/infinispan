@@ -3,6 +3,7 @@ package org.infinispan.offheap.container.entries;
 import org.infinispan.commons.io.UnsignedNumeric;
 import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.util.Util;
+import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.marshall.core.Ids;
 
 import java.io.IOException;
@@ -60,7 +61,7 @@ public class OffHeapTransientCacheValue extends OffHeapImmortalCacheValue {
    }
 
    @Override
-   public OffHeapInternalCacheEntry toInternalCacheEntry(Object key) {
+   public InternalCacheEntry toInternalCacheEntry(Object key) {
       return new OffHeapTransientCacheEntry(key, value, maxIdle, lastUsed);
    }
 

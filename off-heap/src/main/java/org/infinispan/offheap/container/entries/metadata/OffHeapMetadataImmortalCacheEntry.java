@@ -2,10 +2,13 @@ package org.infinispan.offheap.container.entries.metadata;
 
 import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.util.Util;
+import org.infinispan.container.entries.InternalCacheValue;
+import org.infinispan.container.entries.metadata.MetadataAware;
+import org.infinispan.container.entries.metadata.MetadataImmortalCacheEntry;
 import org.infinispan.marshall.core.Ids;
-import org.infinispan.offheap.metadata.OffHeapMetadata;
+import org.infinispan.metadata.Metadata;
 import org.infinispan.offheap.container.entries.OffHeapImmortalCacheEntry;
-import org.infinispan.offheap.container.entries.OffHeapInternalCacheValue;
+
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -15,8 +18,6 @@ import java.util.Set;
 import static org.infinispan.commons.util.Util.toStr;
 
 /**
- * A form of {@link org.infinispan.offheap.container.entries.OffHeapImmortalCacheEntry} that
- * is {@link org.infinispan.offheap.container.entries.metadata.OffHeapMetadataAware}
  *
  * @author Galder Zamarreño
  * @since 5.3
@@ -24,29 +25,31 @@ import static org.infinispan.commons.util.Util.toStr;
  * @author dmitry.gordeev@jpmorgan.com
  * @author peter.lawrey@higherfrequencytrading.com
  */
-public class OffHeapMetadataImmortalCacheEntry extends OffHeapImmortalCacheEntry implements OffHeapMetadataAware {
+public class OffHeapMetadataImmortalCacheEntry extends OffHeapImmortalCacheEntry implements MetadataAware {
 
-   protected OffHeapMetadata _metadata;
+   protected Metadata _metadata;
 
-   public OffHeapMetadataImmortalCacheEntry(Object key, Object value, OffHeapMetadata metadata) {
+   public OffHeapMetadataImmortalCacheEntry(Object key, Object value, Metadata metadata) {
       super(key, value);
       this._metadata = metadata;
    }
 
    @Override
-   public OffHeapMetadata getMetadata() {
+   public Metadata getMetadata() {
       return _metadata;
    }
 
    @Override
-   public void setMetadata( OffHeapMetadata metadata) {
+   public void setMetadata( Metadata metadata) {
       this._metadata = metadata;
    }
 
+    /*
    @Override
-   public OffHeapInternalCacheValue toInternalCacheValue() {
-      return new OffHeapMetadataImmortalCacheValue(value, _metadata);
+   public InternalCacheValue toInternalCacheValue() {
+      return new MetadataImmortalCacheEntry(getKey(), getValue(), getMetadata());
    }
+   */
 
    @Override
    public String toString() {
@@ -54,20 +57,20 @@ public class OffHeapMetadataImmortalCacheEntry extends OffHeapImmortalCacheEntry
             toStr(key), toStr(value), _metadata);
    }
 
-   public static class Externalizer extends AbstractExternalizer<OffHeapMetadataImmortalCacheEntry> {
+   public static class Externalizer extends AbstractExternalizer<MetadataImmortalCacheEntry> {
       @Override
-      public void writeObject(ObjectOutput output, OffHeapMetadataImmortalCacheEntry ice) throws IOException {
-         output.writeObject(ice.key);
-         output.writeObject(ice.value);
-         output.writeObject(ice._metadata);
+      public void writeObject(ObjectOutput output, MetadataImmortalCacheEntry ice) throws IOException {
+         output.writeObject(ice.getKey());
+         output.writeObject(ice.getValue());
+         output.writeObject(ice.getMetadata());
       }
 
       @Override
-      public OffHeapMetadataImmortalCacheEntry readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+      public MetadataImmortalCacheEntry readObject(ObjectInput input) throws IOException, ClassNotFoundException {
          Object k = input.readObject();
          Object v = input.readObject();
-         OffHeapMetadata metadata = (OffHeapMetadata) input.readObject();
-         return new OffHeapMetadataImmortalCacheEntry(k, v, metadata);
+         Metadata metadata = (Metadata) input.readObject();
+         return new MetadataImmortalCacheEntry(k, v, metadata);
       }
 
       @Override
@@ -76,8 +79,8 @@ public class OffHeapMetadataImmortalCacheEntry extends OffHeapImmortalCacheEntry
       }
 
       @Override
-      public Set<Class<? extends OffHeapMetadataImmortalCacheEntry>> getTypeClasses() {
-         return Util.<Class<? extends OffHeapMetadataImmortalCacheEntry>>asSet(OffHeapMetadataImmortalCacheEntry.class);
+      public Set<Class<? extends MetadataImmortalCacheEntry>> getTypeClasses() {
+         return Util.<Class<? extends MetadataImmortalCacheEntry>>asSet(MetadataImmortalCacheEntry.class);
       }
    }
 }

@@ -2,6 +2,9 @@ package org.infinispan.offheap.container.versioning;
 
 import net.jcip.annotations.Immutable;
 import org.infinispan.commons.marshall.AbstractExternalizer;
+import org.infinispan.container.versioning.EntryVersion;
+import org.infinispan.container.versioning.IncrementableEntryVersion;
+import org.infinispan.container.versioning.InequalVersionComparisonResult;
 import org.infinispan.marshall.core.Ids;
 
 import java.io.IOException;
@@ -17,7 +20,7 @@ import java.util.Set;
  * @since 5.1
  */
 @Immutable
-public class OffHeapSimpleClusteredVersion implements OffHeapIncrementableEntryVersion {
+public class OffHeapSimpleClusteredVersion implements IncrementableEntryVersion {
 
    /**
     * The cache topology id in which it was first created.
@@ -32,21 +35,21 @@ public class OffHeapSimpleClusteredVersion implements OffHeapIncrementableEntryV
    }
 
    @Override
-   public OffHeapInequalVersionComparisonResult compareTo(OffHeapEntryVersion other) {
+   public InequalVersionComparisonResult compareTo(EntryVersion other) {
       if (other instanceof OffHeapSimpleClusteredVersion) {
          OffHeapSimpleClusteredVersion otherVersion = (OffHeapSimpleClusteredVersion) other;
 
          if (topologyId > otherVersion.topologyId)
-            return OffHeapInequalVersionComparisonResult.AFTER;
+            return InequalVersionComparisonResult.AFTER;
          if (topologyId < otherVersion.topologyId)
-            return OffHeapInequalVersionComparisonResult.BEFORE;
+            return InequalVersionComparisonResult.BEFORE;
 
          if (version > otherVersion.version)
-            return OffHeapInequalVersionComparisonResult.AFTER;
+            return InequalVersionComparisonResult.AFTER;
          if (version < otherVersion.version)
-            return OffHeapInequalVersionComparisonResult.BEFORE;
+            return InequalVersionComparisonResult.BEFORE;
 
-         return OffHeapInequalVersionComparisonResult.EQUAL;
+         return InequalVersionComparisonResult.EQUAL;
       } else {
          throw new IllegalArgumentException("I only know how to deal with SimpleClusteredVersions, not " + other.getClass().getName());
       }

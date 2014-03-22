@@ -1,11 +1,9 @@
 package org.infinispan.offheap.container.entries;
 
 import org.infinispan.container.DataContainer;
+import org.infinispan.container.entries.InternalCacheEntry;
+import org.infinispan.container.versioning.EntryVersion;
 import org.infinispan.metadata.Metadata;
-import org.infinispan.offheap.container.OffHeapDataContainer;
-import org.infinispan.offheap.container.OffHeapDataContainer;
-import org.infinispan.offheap.container.versioning.OffHeapEntryVersion;
-import org.infinispan.offheap.metadata.OffHeapMetadata;
 import org.infinispan.transaction.WriteSkewException;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
@@ -25,7 +23,7 @@ import static org.infinispan.offheap.container.entries.OffHeapReadCommittedEntry
 public abstract class OffHeapRepeatableReadEntry extends OffHeapReadCommittedEntry {
    private static final Log log = LogFactory.getLog(OffHeapRepeatableReadEntry.class);
 
-   public OffHeapRepeatableReadEntry(Object key, Object value, OffHeapMetadata metadata) {
+   public OffHeapRepeatableReadEntry(Object key, Object value, Metadata metadata) {
       super(key, value, metadata);
    }
 
@@ -39,9 +37,9 @@ public abstract class OffHeapRepeatableReadEntry extends OffHeapReadCommittedEnt
 //      oldValue = value;
 //   }
 
-   public void performLocalWriteSkewCheck(OffHeapDataContainer container, boolean alreadyCopied) {
+   public void performLocalWriteSkewCheck(DataContainer container, boolean alreadyCopied) {
       // check for write skew.
-      OffHeapInternalCacheEntry ice = container.get(key);
+      InternalCacheEntry ice = container.get(key);
 
       Object actualValue = ice == null ? null : ice.getValue();
       Object valueToCompare = alreadyCopied ? oldValue : value;
@@ -63,12 +61,14 @@ public abstract class OffHeapRepeatableReadEntry extends OffHeapReadCommittedEnt
       }
    }
 
+    /*
     @Override
-    public void copyForUpdate(OffHeapDataContainer container) {
+    public void copyForUpdate(DataContainer container) {
 
     }
+    */
 
-    public abstract OffHeapEntryVersion getVersion();
+    public abstract EntryVersion getVersion();
 
 
     public abstract void copyForUpdate(DataContainer container);

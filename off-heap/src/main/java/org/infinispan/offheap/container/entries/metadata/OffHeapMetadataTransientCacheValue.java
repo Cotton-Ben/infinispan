@@ -3,24 +3,20 @@ package org.infinispan.offheap.container.entries.metadata;
 import org.infinispan.commons.io.UnsignedNumeric;
 import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.util.Util;
+import org.infinispan.container.entries.InternalCacheEntry;
+import org.infinispan.container.entries.metadata.MetadataAware;
 import org.infinispan.marshall.core.Ids;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.offheap.commons.marshall.OffHeapAbstractExternalizer;
 import org.infinispan.offheap.container.entries.OffHeapExpiryHelper;
 import org.infinispan.offheap.container.entries.OffHeapImmortalCacheValue;
-import org.infinispan.offheap.container.entries.OffHeapInternalCacheEntry;
-import org.infinispan.offheap.metadata.OffHeapMetadata;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Set;
 
-/**
- * A transient cache value, to correspond with
- * {@link org.infinispan.offheap.container.entries.OffHeapTransientCacheEntry} which is
- * {@link OffHeapMetadataAware}
- *
+/*
  * @author Galder Zamarreño
  * @since 5.3
  * @author ben.cotton@jpmorgan.com
@@ -28,19 +24,19 @@ import java.util.Set;
  * @author peter.lawrey@higherfrequencytrading.com
  *
  */
-public class OffHeapMetadataTransientCacheValue extends OffHeapImmortalCacheValue implements OffHeapMetadataAware {
+public class OffHeapMetadataTransientCacheValue extends OffHeapImmortalCacheValue implements MetadataAware {
 
-   OffHeapMetadata metadata;
+   Metadata metadata;
    long lastUsed;
 
-   public OffHeapMetadataTransientCacheValue(Object value, OffHeapMetadata metadata, long lastUsed) {
+   public OffHeapMetadataTransientCacheValue(Object value, Metadata metadata, long lastUsed) {
       super(value);
       this.metadata = metadata;
       this.lastUsed = lastUsed;
    }
 
    @Override
-   public OffHeapInternalCacheEntry toInternalCacheEntry(Object key) {
+   public InternalCacheEntry toInternalCacheEntry(Object key) {
       return new OffHeapMetadataTransientCacheEntry(key, value, metadata, lastUsed);
    }
 
@@ -70,12 +66,12 @@ public class OffHeapMetadataTransientCacheValue extends OffHeapImmortalCacheValu
    }
 
    @Override
-   public OffHeapMetadata getMetadata() {
+   public Metadata getMetadata() {
       return metadata;
    }
 
    @Override
-   public void setMetadata(OffHeapMetadata metadata) {
+   public void setMetadata(Metadata metadata) {
       this.metadata = metadata;
    }
 
@@ -96,7 +92,7 @@ public class OffHeapMetadataTransientCacheValue extends OffHeapImmortalCacheValu
       @Override
       public OffHeapMetadataTransientCacheValue readObject(ObjectInput input) throws IOException, ClassNotFoundException {
          Object v = input.readObject();
-         OffHeapMetadata metadata = (OffHeapMetadata) input.readObject();
+         Metadata metadata = (Metadata) input.readObject();
          long lastUsed = UnsignedNumeric.readUnsignedLong(input);
          return new OffHeapMetadataTransientCacheValue(v, metadata, lastUsed);
       }

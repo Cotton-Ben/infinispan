@@ -67,11 +67,13 @@ public class OffHeapMortalCacheValue extends OffHeapImmortalCacheValue {
       return true;
    }
 
+    /*
    @Override
    public
    OffHeapInternalCacheEntry toInternalCacheEntry(Object key) {
       return new OffHeapMortalCacheEntry(key, value, lifespan, created);
    }
+   */
 
    @Override
    public long getExpiryTime() {

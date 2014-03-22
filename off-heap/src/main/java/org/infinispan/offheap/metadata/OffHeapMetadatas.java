@@ -1,5 +1,7 @@
 package org.infinispan.offheap.metadata;
 
+import org.infinispan.metadata.Metadata;
+
 /**
  * Utility method for Metadata classes.
  *
@@ -24,7 +26,7 @@ public class OffHeapMetadatas {
     * called, or a brand new target Metadata instance with version from source
     * metadata applied.
     */
-   public static OffHeapMetadata applyVersion(OffHeapMetadata source, OffHeapMetadata target) {
+   public static Metadata applyVersion(Metadata source, Metadata target) {
       if (target.version() == null && source.version() != null)
          return target.builder().version(source.version()).build();
 

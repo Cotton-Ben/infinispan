@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author Galder Zamarreño
  * @since 5.3
  */
-public class OffHeapNumericVersionGenerator implements OffHeapVersionGenerator {
+public class OffHeapNumericVersionGenerator implements VersionGenerator {
 
    private static final Log log = LogFactory.getLog(OffHeapNumericVersionGenerator.class);
 
@@ -67,13 +67,13 @@ public class OffHeapNumericVersionGenerator implements OffHeapVersionGenerator {
    }
 
    @Override
-   public OffHeapIncrementableEntryVersion generateNew() {
+   public IncrementableEntryVersion generateNew() {
       long counter = versionCounter.incrementAndGet();
       return this.createNumericVersion(counter);
 
    }
 
-   private OffHeapIncrementableEntryVersion createNumericVersion(long counter) {
+   private IncrementableEntryVersion createNumericVersion(long counter) {
       // Version counter occupies the least significant 4 bytes of the version
       return isClustered
             ? new OffHeapNumericVersion(versionPrefix.get() | counter)
@@ -81,7 +81,7 @@ public class OffHeapNumericVersionGenerator implements OffHeapVersionGenerator {
    }
 
    @Override
-   public OffHeapIncrementableEntryVersion increment(OffHeapIncrementableEntryVersion initialVersion) {
+   public IncrementableEntryVersion increment(IncrementableEntryVersion initialVersion) {
       if (initialVersion instanceof OffHeapNumericVersion) {
          OffHeapNumericVersion old = (OffHeapNumericVersion) initialVersion;
          long counter = old.getVersion() + 1;
@@ -92,7 +92,7 @@ public class OffHeapNumericVersionGenerator implements OffHeapVersionGenerator {
    }
 
    @Override
-   public OffHeapIncrementableEntryVersion nonExistingVersion() {
+   public IncrementableEntryVersion nonExistingVersion() {
       return NON_EXISTING;
    }
 

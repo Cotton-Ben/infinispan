@@ -1,6 +1,10 @@
 package org.infinispan.offheap.container.versioning;
 
 import org.infinispan.commons.marshall.AbstractExternalizer;
+import org.infinispan.container.versioning.EntryVersion;
+import org.infinispan.container.versioning.IncrementableEntryVersion;
+import org.infinispan.container.versioning.InequalVersionComparisonResult;
+import org.infinispan.container.versioning.NumericVersion;
 import org.infinispan.marshall.core.Ids;
 
 import java.io.IOException;
@@ -15,7 +19,7 @@ import java.util.Set;
  * @author Galder Zamarreño
  * @since 5.3
  */
-public class OffHeapNumericVersion implements OffHeapIncrementableEntryVersion {
+public class OffHeapNumericVersion implements IncrementableEntryVersion {
 
    private final long version;
 
@@ -28,15 +32,15 @@ public class OffHeapNumericVersion implements OffHeapIncrementableEntryVersion {
    }
 
    @Override
-   public OffHeapInequalVersionComparisonResult compareTo(OffHeapEntryVersion other) {
-      if (other instanceof OffHeapNumericVersion) {
+   public InequalVersionComparisonResult compareTo(EntryVersion other) {
+      if (other instanceof NumericVersion) {
          OffHeapNumericVersion otherVersion = (OffHeapNumericVersion) other;
          if (version < otherVersion.version)
-            return OffHeapInequalVersionComparisonResult.BEFORE;
+            return InequalVersionComparisonResult.BEFORE;
          else if (version > otherVersion.version)
-            return OffHeapInequalVersionComparisonResult.AFTER;
+            return InequalVersionComparisonResult.AFTER;
          else
-            return OffHeapInequalVersionComparisonResult.EQUAL;
+            return InequalVersionComparisonResult.EQUAL;
       }
 
       throw new IllegalArgumentException(

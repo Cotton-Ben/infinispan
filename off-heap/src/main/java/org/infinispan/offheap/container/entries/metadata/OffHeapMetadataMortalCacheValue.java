@@ -2,12 +2,13 @@ package org.infinispan.offheap.container.entries.metadata;
 
 import org.infinispan.commons.io.UnsignedNumeric;
 import org.infinispan.commons.util.Util;
+import org.infinispan.container.entries.InternalCacheEntry;
+import org.infinispan.container.entries.metadata.MetadataAware;
 import org.infinispan.marshall.core.Ids;
+import org.infinispan.metadata.Metadata;
 import org.infinispan.offheap.commons.marshall.OffHeapAbstractExternalizer;
 import org.infinispan.offheap.container.entries.OffHeapExpiryHelper;
 import org.infinispan.offheap.container.entries.OffHeapImmortalCacheValue;
-import org.infinispan.offheap.container.entries.OffHeapInternalCacheEntry;
-import org.infinispan.offheap.metadata.OffHeapMetadata;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -27,30 +28,30 @@ import java.util.Set;
  */
 public class OffHeapMetadataMortalCacheValue
                                             extends OffHeapImmortalCacheValue
-                                            implements OffHeapMetadataAware {
+                                            implements MetadataAware {
 
-   OffHeapMetadata metadata;
+   Metadata metadata;
    long created;
 
-   public OffHeapMetadataMortalCacheValue(Object value, OffHeapMetadata metadata, long created) {
+   public OffHeapMetadataMortalCacheValue(Object value, Metadata metadata, long created) {
       super(value);
       this.metadata = metadata;
       this.created = created;
    }
 
    @Override
-   public OffHeapInternalCacheEntry toInternalCacheEntry(Object key) {
+   public InternalCacheEntry toInternalCacheEntry(Object key) {
       return new OffHeapMetadataMortalCacheEntry(key, value, metadata, created);
    }
 
    @Override
-   public OffHeapMetadata getMetadata() {
+   public Metadata getMetadata() {
       return metadata;
    }
 
 
     @Override
-   public void setMetadata(OffHeapMetadata metadata) {
+   public void setMetadata(Metadata metadata) {
       this.metadata = metadata;
    }
 
@@ -96,7 +97,7 @@ public class OffHeapMetadataMortalCacheValue
       @Override
       public OffHeapMetadataMortalCacheValue readObject(ObjectInput input) throws IOException, ClassNotFoundException {
          Object v = input.readObject();
-         OffHeapMetadata metadata = (OffHeapMetadata) input.readObject();
+         Metadata metadata = (Metadata) input.readObject();
          long created = UnsignedNumeric.readUnsignedLong(input);
          return new OffHeapMetadataMortalCacheValue(v, metadata, created);
       }
