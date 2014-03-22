@@ -67,7 +67,6 @@
       <module>integrationtests/cdi-jcache-it</module>
       <module>jcache</module>
       <module>off-heap</module>
-      <module>server/integration</module>
    </modules>
 
    <profiles>

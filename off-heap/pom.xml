@@ -24,7 +24,7 @@
         <pax.url.version>1.6.0</pax.url.version>
         <logback.version>0.9.6</logback.version>
         <openhft.lang.version>6.3</openhft.lang.version>
-        <openhft.hugecollections.version>4.0.0</openhft.hugecollections.version>
+        <!-- <openhft.hugecollections.version>4.0.0</openhft.hugecollections.version> -->
         <osgi.version>5.0.0</osgi.version>
     </properties>
 

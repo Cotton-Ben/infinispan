@@ -1,7 +1,6 @@
 package org.infinispan.offheap;
 
 import net.openhft.lang.io.Bytes;
-import net.openhft.lang.model.Byteable;
 import net.openhft.lang.model.constraints.MaxSize;
 //import org.infinispan.offheap.container.entries.OffHeapInternalCacheEntry;
 
@@ -35,26 +34,26 @@ public interface BondVOInterface {
     String getSymbol();
 
     // OpenHFT Off-Heap array[ ] processing notice ‘At’ suffix
-    void setMarketPxIntraDayHistoryAt(@MaxSize(7) int tradingDayHour, MarketPx mPx);
-    MarketPx getMarketPxIntraDayHistoryAt(int tradingDayHour);
+    //void setMarketPxIntraDayHistoryAt(@MaxSize(7) int tradingDayHour, MarketPx mPx);
+    //MarketPx getMarketPxIntraDayHistoryAt(int tradingDayHour);
 
     /* nested interface - empowering an Off-Heap hierarchical “TIER of prices”
     as array[ ] value */
-    interface MarketPx {
-        double getCallPx();
-        void setCallPx(double px);
-
-        double getParPx();
-        void setParPx(double px);
-
-        double getMaturityPx();
-        void setMaturityPx(double px);
-
-        double getBidPx();
-        void setBidPx(double px);
-
-        double getAskPx();
-        void setAskPx(double px);
-    }
+//    interface MarketPx {
+//        double getCallPx();
+//        void setCallPx(double px);
+//
+//        double getParPx();
+//        void setParPx(double px);
+//
+//        double getMaturityPx();
+//        void setMaturityPx(double px);
+//
+//        double getBidPx();
+//        void setBidPx(double px);
+//
+//        double getAskPx();
+//        void setAskPx(double px);
+//    }
 }
 
