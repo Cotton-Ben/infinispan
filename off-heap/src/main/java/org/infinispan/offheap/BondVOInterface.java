@@ -1,16 +1,22 @@
 package org.infinispan.offheap;
 
+import net.openhft.lang.io.Bytes;
 import net.openhft.lang.model.constraints.MaxSize;
+import org.infinispan.container.DataContainer;
+import org.infinispan.container.entries.InternalCacheEntry;
+import org.infinispan.container.entries.InternalCacheValue;
 import org.infinispan.metadata.Metadata;
-import org.infinispan.offheap.container.OffHeapDataContainer;
-import org.infinispan.offheap.container.entries.OffHeapInternalCacheEntry;
-import org.infinispan.offheap.container.entries.OffHeapInternalCacheValue;
-import org.infinispan.offheap.metadata.OffHeapMetadata;
 
 /**
  *
  */
-public interface BondVOInterface extends OffHeapInternalCacheEntry {
+public interface BondVOInterface extends InternalCacheEntry {
+
+    void setRecord(Bytes record);
+    Bytes getRecord();
+    void setEntry(Bytes entry);
+    Bytes getEntry();
+
 
     /* add support for entry based locking */
     void busyLockEntry() throws InterruptedException;
@@ -67,10 +73,10 @@ public interface BondVOInterface extends OffHeapInternalCacheEntry {
     void reincarnate(long now);
 
     @Override
-    OffHeapInternalCacheValue toInternalCacheValue();
+    InternalCacheValue toInternalCacheValue();
 
     @Override
-    OffHeapInternalCacheEntry clone();
+    InternalCacheEntry clone();
 
     @Override
     boolean isNull();
@@ -118,7 +124,7 @@ public interface BondVOInterface extends OffHeapInternalCacheEntry {
     int hashCode();
 
     @Override
-    void commit(OffHeapDataContainer container, OffHeapMetadata metadata);
+    void commit(DataContainer container, Metadata metadata);
 
     @Override
     void rollback();
@@ -148,10 +154,10 @@ public interface BondVOInterface extends OffHeapInternalCacheEntry {
     boolean undelete(boolean doUndelete);
 
     @Override
-    OffHeapMetadata getMetadata();
+    Metadata getMetadata();
 
     @Override
-    void setMetadata(OffHeapMetadata metadata);
+    void setMetadata(Metadata metadata);
 
     /* nested interface - empowering an Off-Heap hierarchical “TIER of prices”
     as array[ ] value */
