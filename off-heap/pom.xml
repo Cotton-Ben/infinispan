@@ -23,7 +23,7 @@
         <pax.exam.version>3.4.0</pax.exam.version>
         <pax.url.version>1.6.0</pax.url.version>
         <logback.version>0.9.6</logback.version>
-        <openhft.lang.version>6.3</openhft.lang.version>
+        <openhft.lang.version>6.3.4-SNAPSHOT</openhft.lang.version>
         <openhft.hugecollections.version>4.0.0</openhft.hugecollections.version>
         <osgi.version>5.0.0</osgi.version>
     </properties>
@@ -64,12 +64,12 @@
         <dependency>
             <groupId>net.openhft</groupId>
             <artifactId>collections</artifactId>
-            <version>3.0c</version>
+            <version>3.0e-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>net.openhft</groupId>
             <artifactId>lang</artifactId>
-            <version>${openhft.lang.version}</version>
+            <version>6.3.4-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>net.openhft</groupId>
@@ -121,6 +121,7 @@
             <artifactId>org.apache.felix.framework</artifactId>
             <version>4.2.1</version>
         </dependency>
+<!--
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
@@ -131,6 +132,7 @@
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
         </dependency>
+-->
         <dependency>
             <groupId>net.openhft</groupId>
             <artifactId>compiler</artifactId>

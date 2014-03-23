@@ -21,12 +21,12 @@
       <module>parent</module>
       <module>commons</module>
       <module>core</module>
-	<module>extended-statistics</module> 
-	<module>tools</module> 
+      <module>extended-statistics</module>
+      <module>tools</module>
       <module>query</module>
       <module>query-dsl</module>
       <module>remote-query/remote-query-client</module>
-      <module>remote-query/remote-query-server</module> 
+      <module>remote-query/remote-query-server</module>
       <module>tree</module>
       <module>lucene</module>
       <module>lucene/lucene-directory</module>
@@ -34,18 +34,19 @@
       <module>lucene/lucene-v3</module>
       <module>persistence</module>
       <module>persistence/jdbc</module>
+      <module>persistence/jpa</module>
       <module>persistence/remote</module>
       <module>persistence/cli</module>
       <module>persistence/leveldb</module>
       <module>persistence/rest</module>
-	<module>server</module>
+      <module>server</module>
       <module>server/core</module>
       <module>server/memcached</module>
       <module>server/hotrod</module>
       <module>server/websocket</module>
-      <module>server/rest</module> 
-      <module>client/hotrod-client</module> 
-<!--	<module>rhq-plugin</module> -->
+      <module>server/rest</module>
+      <module>client/hotrod-client</module>
+      <module>rhq-plugin</module>
       <module>spring</module>
       <module>cli/cli-server</module>
       <module>cli/cli-client</module>
@@ -55,7 +56,7 @@
       <module>demos/ec2-ui</module>
       <module>demos/directory</module>
       <module>demos/lucene-directory-demo</module>
-	<module>demos/gridfs-webdav</module> 
+      <module>demos/gridfs-webdav</module>
       <module>demos/nearcache</module>
       <module>demos/nearcache-client</module>
       <module>cdi/extension</module>
@@ -65,9 +66,8 @@
       <module>integrationtests/compatibility-mode-it</module>
       <module>integrationtests/cdi-jcache-it</module>
       <module>jcache</module>
-      <module>off-heap</module>
       <module>server/integration</module>
-      <module>off-heap</module>
+           <module>off-heap</module>
    </modules>
 
    <profiles>
