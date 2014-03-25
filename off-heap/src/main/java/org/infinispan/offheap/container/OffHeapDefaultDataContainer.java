@@ -60,7 +60,7 @@ public class OffHeapDefaultDataContainer implements DataContainer {
                    .entrySize(entrysSize)
                    .minSegments(segmentsSize)
                    .create(
-                           new File("c:\\workspace\\" + bondVOOperand + ".@t=" + t),
+                           new File("/dev/shm/" + bondVOOperand + ".@t=" + t),
                            String.class,
                            BondVOInterface.class
                    );
