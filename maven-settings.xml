@@ -10,10 +10,10 @@
     <profiles>
         <profile>
             <id>jboss-public-repository</id>
-            <localRepository>/root/.m2/repository</localRepository>
-            <interactiveMode>true</interactiveMode>
-            <usePluginRegistry>false</usePluginRegistry>
-            <offline>false</offline>
+            <!-- <localRepository>/root/.m2/repository</localRepository> -->
+            <!-- <interactiveMode>true</interactiveMode> -->
+            <!-- <usePluginRegistry>false</usePluginRegistry> --> 
+            <!-- <offline>false</offline> -->
             <repositories>
                 <repository>
                     <id>jboss-public-repository-group</id>

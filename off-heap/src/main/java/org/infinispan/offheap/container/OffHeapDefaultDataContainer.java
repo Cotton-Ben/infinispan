@@ -2,6 +2,7 @@ package org.infinispan.offheap.container;
 
 import net.jcip.annotations.ThreadSafe;
 import net.openhft.collections.SharedHashMapBuilder;
+import net.openhft.jcache.BondVOInterface;
 
 import org.infinispan.commons.logging.Log;
 import org.infinispan.commons.logging.LogFactory;
@@ -13,7 +14,7 @@ import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.eviction.*;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.metadata.Metadata;
-import org.infinispan.offheap.BondVOInterface;
+
 import org.infinispan.persistence.manager.PersistenceManager;
 import org.infinispan.persistence.spi.AdvancedCacheLoader;
 import org.infinispan.offheap.util.OffHeapCoreImmutables;

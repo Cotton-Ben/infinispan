@@ -1,9 +1,8 @@
 package org.infinispan.offheap;
 
+import net.openhft.jcache.BondVOInterface;
 import net.openhft.lang.model.DataValueClasses;
 import org.infinispan.container.DataContainer;
-import org.infinispan.container.InternalEntryFactory;
-import org.infinispan.container.InternalEntryFactoryImpl;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.offheap.container.OffHeapDefaultDataContainer;
 import org.infinispan.offheap.container.OffHeapInternalEntryFactoryImpl;
