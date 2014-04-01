@@ -23,14 +23,14 @@
         <pax.exam.version>3.4.0</pax.exam.version>
         <pax.url.version>1.6.0</pax.url.version>
         <logback.version>0.9.6</logback.version>
-        <openhft.lang.version>6.3.4-SNAPSHOT</openhft.lang.version>
+        <openhft.lang.version>6.3.4</openhft.lang.version>
         <openhft.hugecollections.version>4.0.0</openhft.hugecollections.version>
         <osgi.version>5.0.0</osgi.version>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.infinispan</groupId>
             <artifactId>infinispan-core</artifactId>
         </dependency>
 
@@ -50,7 +50,7 @@
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.infinispan</groupId>
             <artifactId>infinispan-core</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
@@ -61,15 +61,24 @@
             <artifactId>arquillian-testng-container</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- OpenHFT Off-Heap SharedHashMapBuilder -->
         <dependency>
             <groupId>net.openhft</groupId>
             <artifactId>collections</artifactId>
-            <version>3.0e-SNAPSHOT</version>
+            <version>3.0e</version>
         </dependency>
+        <!-- OpenHFT join to JCache provider = RedHat Infinispan -->
+        <!--
+        <dependency>
+            <groupId>net.openhft</groupId>
+            <artifactId>jcache</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        -->
         <dependency>
             <groupId>net.openhft</groupId>
             <artifactId>lang</artifactId>
-            <version>6.3.4-SNAPSHOT</version>
+            <version>6.3.4</version>
         </dependency>
         <dependency>
             <groupId>net.openhft</groupId>
